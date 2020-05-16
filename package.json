@@ -1,0 +1,167 @@
+{
+	"name": "xray-beams",
+	"displayName": "Xray Beams",
+	"description": "Xray test management integration for vscode",
+	"version": "0.0.1",
+	"engines": {
+		"vscode": "^1.45.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"*"
+	],
+	"main": "./out/extension.js",
+	"types": "./src/xray.d.ts",
+	"contributes": {
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "xray-beams",
+					"title": "Xray Beams",
+					"icon": "media/dep.svg"
+				}
+			]
+		},
+		"views": {
+			"xray-beams": [
+				{
+					"id": "xrayBeams",
+					"name": ""
+				}
+			]
+		},
+		"commands": [
+			{
+				"command": "xrayBeams.refresh",
+				"title": "Refresh",
+				"icon": {
+					"light": "resources/light/refresh.svg",
+					"dark": "resources/dark/refresh.svg"
+				}
+			},
+			{
+				"command": "xrayBeams.newRootFolder",
+				"title": "New Folder",
+				"icon": {
+					"light": "resources/light/add.svg",
+					"dark": "resources/dark/add.svg"
+				}
+			},
+			{
+				"command": "xrayBeams.newFolder",
+				"title": "New Folder"
+			},
+			{
+				"command": "xrayBeams.renameFolder",
+				"title": "Rename"
+			},
+			{
+				"command": "xrayBeams.deleteFolder",
+				"title": "Delete"
+			},
+			{
+				"command": "xrayBeams.pushFeature",
+				"title": "XrayBeams: Push"
+			}
+		],
+		"menus": {
+			"commandPalette": [
+				{
+					"command": "xrayBeams.pushFeature",
+					"when": "editorLangId == feature"
+				}
+			],
+			"view/title": [
+				{
+					"command": "xrayBeams.refresh",
+					"when": "view == xrayBeams",
+					"group": "navigation@0"
+				},
+				{
+					"command": "xrayBeams.newRootFolder",
+					"when": "view == xrayBeams",
+					"group": "navigation@1"
+				}
+			],
+			"view/item/context": [
+				{
+					"command": "xrayBeams.newFolder",
+					"when": "view == xrayBeams && viewItem == folder",
+					"group": "navigation"
+				},
+				{
+					"command": "xrayBeams.renameFolder",
+					"when": "view == xrayBeams && viewItem == folder",
+					"group": "1_modification@0"
+				},
+				{
+					"command": "xrayBeams.deleteFolder",
+					"when": "view == xrayBeams && viewItem == folder",
+					"group": "1_modification@1"
+				}
+			]
+		},
+		"viewsWelcome": [
+			{
+				"view": "xrayBeams",
+				"contents": "No folders found.",
+				"when": "vscode.workspace.getConfiguration('xrayBeams').jira.baseUrl"
+			},
+			{
+				"view": "xrayBeams",
+				"contents": "There are missing required setup.\n[Configure](command:xrayBeams.configureSettings)",
+				"when": "xrayBeamsHasInvalidSettings == true"
+			}
+		],
+		"configuration": {
+			"title": "Xray Beams",
+			"properties": {
+				"xrayBeams.jira.baseUrl": {
+					"type": "string",
+					"format": "uri"
+				},
+				"xrayBeams.jira.port": {
+					"type": "number",
+					"default": 443,
+					"maximum": 65535
+				},
+				"xrayBeams.jira.user.name": {
+					"type": "string"
+				},
+				"xrayBeams.jira.user.password": {
+					"type": "string"
+				},
+				"xrayBeams.jira.projectKey": {
+					"type": "string"
+				}
+			}
+		}
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -p ./",
+		"lint": "eslint src --ext ts",
+		"watch": "tsc -watch -p ./",
+		"pretest": "npm run compile && npm run lint",
+		"test": "node ./out/test/runTest.js"
+	},
+	"devDependencies": {
+		"@types/glob": "^7.1.1",
+		"@types/mocha": "^7.0.1",
+		"@types/node": "^12.11.7",
+		"@types/vscode": "^1.45.0",
+		"eslint": "^6.8.0",
+		"@typescript-eslint/parser": "^2.18.0",
+		"@typescript-eslint/eslint-plugin": "^2.18.0",
+		"glob": "^7.1.6",
+		"mocha": "^7.0.1",
+		"typescript": "^3.7.5",
+		"vscode-test": "^1.3.0"
+	},
+	"dependencies": {
+		"base-64": "^0.1.0",
+		"node-fetch": "^2.6.0"
+	}
+}
