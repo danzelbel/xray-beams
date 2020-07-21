@@ -19,18 +19,26 @@ export async function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.commands.registerCommand("xrayBeams.workspaceInit", () => initWorkspace(true)));
 	context.subscriptions.push(vscode.commands.registerCommand("xrayBeams.refresh", async () => initWorkspace()));
 
-	context.subscriptions.push(vscode.workspace.onDidRenameFiles(e => {
-		e.files.forEach(v => {
+	context.subscriptions.push(vscode.workspace.onDidRenameFiles(async e => {
+		await Promise.all(e.files.map(async v => {
 			if (v.newUri.scheme !== "xbfs" && lookup.lookup(v.newUri, false) instanceof Directory) return;
 			const oldName = `${path.posix.basename(v.oldUri.path)}.feature`;
 			const newName = `${path.posix.basename(v.newUri.path)}.feature`;
-			xbfs.rename(vscode.Uri.joinPath(v.newUri, oldName), vscode.Uri.joinPath(v.newUri, newName), { overwrite: true }, true);
-		});
+			await xbfs.rename(vscode.Uri.joinPath(v.newUri, oldName), vscode.Uri.joinPath(v.newUri, newName), { overwrite: true }, true);
+		}));
+		await xbfs.refresh();
+		orphansView.refresh();
+	}));
+
+	context.subscriptions.push(vscode.workspace.onDidDeleteFiles(async e => {
+		await xbfs.refresh();
+		orphansView.refresh();
 	}));
 
 	context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(async e => {
 		if (!e.affectsConfiguration("xrayBeams")) return;
 		await xbfs.refresh();
+		orphansView.refresh();
 	}));
 
 	async function initWorkspace(setup: boolean = false): Promise<void> {

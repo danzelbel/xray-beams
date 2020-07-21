@@ -256,6 +256,7 @@ export class XrayBeamsFS implements vscode.FileSystemProvider, vscode.Disposable
 
         // Reset the directory
         this.lookup.root = new Directory('');
+        this.scm.origEntries = new Map<string, xb.Folder>();
         this.scm.origEntries = await this.xrayRepository.getEntries();
         const promises = [];
         this.scm.origEntries.forEach((f, path) => {
@@ -275,6 +276,7 @@ export class XrayBeamsFS implements vscode.FileSystemProvider, vscode.Disposable
         this.initialized = true;
         vscode.commands.executeCommand("workbench.files.action.refreshFilesExplorer");
         vscode.window.setStatusBarMessage("Refresh workspace done", 2000);
+        return Promise.resolve();
     }
 
     // --- manage file metadata
@@ -305,7 +307,7 @@ export class XrayBeamsFS implements vscode.FileSystemProvider, vscode.Disposable
             entry.size = entry.data.byteLength;
             entry.pullData = false;
         }
-        return entry.data;
+        return Promise.resolve(entry.data);
     }
 
     async writeFile(uri: vscode.Uri, content: Uint8Array, options: { create: boolean, overwrite: boolean }, folder?: xb.Folder): Promise<void> {
@@ -337,7 +339,7 @@ export class XrayBeamsFS implements vscode.FileSystemProvider, vscode.Disposable
 
         if (!this.initialized) return;
 
-        this.scm.fileChanged(uri);
+        return await this.scm.fileChanged(uri);
     }
 
     // --- manage files/folders
@@ -367,12 +369,10 @@ export class XrayBeamsFS implements vscode.FileSystemProvider, vscode.Disposable
         // Update remote
         if (path.posix.dirname(oldUri.path) === path.posix.dirname(newUri.path)) {
             entry.folder.name = newName;
-            await this.xrayRepository.updateFolder(entry.folder);
+            return await this.xrayRepository.updateFolder(entry.folder);
         } else {
-            await this.xrayRepository.moveFolder(entry.folder, newParent.folder.id);
+            return await this.xrayRepository.moveFolder(entry.folder, newParent.folder.id);
         }
-        await this.refresh();
-        vscode.commands.executeCommand("xrayBeams.orphansView.refresh");
     }
 
     async delete(uri: vscode.Uri): Promise<void> {
@@ -392,9 +392,7 @@ export class XrayBeamsFS implements vscode.FileSystemProvider, vscode.Disposable
         this._fireSoon({ type: vscode.FileChangeType.Changed, uri: dirname }, { uri, type: vscode.FileChangeType.Deleted });
 
         // Update remote
-        await this.xrayRepository.deleteFolder(entry.folder);
-        await this.refresh();
-        vscode.commands.executeCommand("xrayBeams.orphansView.refresh");
+        return await this.xrayRepository.deleteFolder(entry.folder);
     }
 
     async createDirectory(uri: vscode.Uri, folder?: xb.Folder): Promise<void> {
@@ -419,6 +417,7 @@ export class XrayBeamsFS implements vscode.FileSystemProvider, vscode.Disposable
             // Let's create the arbitrary feature file for this directory too
             this.writeFile(vscode.Uri.joinPath(uri, `${entry.name}.feature`), Buffer.from(`Feature: ${entry.name}`), { create: true, overwrite: true }, folder);
         }
+        return Promise.resolve();
     }
 
     // --- manage file events
