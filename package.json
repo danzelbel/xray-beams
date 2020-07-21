@@ -7,114 +7,142 @@
 		"vscode": "^1.45.0"
 	},
 	"categories": [
-		"Other"
+		"Other",
+		"SCM Providers"
 	],
 	"activationEvents": [
-		"*"
+		"onFileSystem:xbfs",
+		"onCommand:xrayBeams.workspaceInit",
+		"onCommand:xrayBeams.refresh"
 	],
 	"main": "./out/extension.js",
-	"types": "./src/xray.d.ts",
+	"types": "./index.d.ts",
 	"contributes": {
-		"viewsContainers": {
-			"activitybar": [
-				{
-					"id": "xray-beams",
-					"title": "Xray Beams",
-					"icon": "media/dep.svg"
-				}
-			]
-		},
 		"views": {
-			"xray-beams": [
+			"explorer": [
 				{
-					"id": "xrayBeams",
-					"name": ""
+					"id": "orphansView",
+					"name": "XrayBeams Orphans"
 				}
 			]
 		},
 		"commands": [
 			{
+				"command": "xrayBeams.workspaceInit",
+				"title": "XrayBeams: Setup Workspace"
+			},
+			{
 				"command": "xrayBeams.refresh",
-				"title": "Refresh",
-				"icon": {
-					"light": "resources/light/refresh.svg",
-					"dark": "resources/dark/refresh.svg"
-				}
+				"title": "XrayBeams: Refresh"
 			},
 			{
-				"command": "xrayBeams.newRootFolder",
-				"title": "New Folder",
-				"icon": {
-					"light": "resources/light/add.svg",
-					"dark": "resources/dark/add.svg"
-				}
+				"command": "xrayBeams.orphansView.openFile",
+				"title": "Open File",
+				"icon": "$(go-to-file)"
 			},
 			{
-				"command": "xrayBeams.newFolder",
-				"title": "New Folder"
+				"command": "xrayBeams.orphansView.addToFeature",
+				"title": "Add to Current Feature",
+				"icon": "$(add)"
 			},
 			{
-				"command": "xrayBeams.renameFolder",
-				"title": "Rename"
+				"command": "xrayBeams.scm.commit",
+				"title": "Commit",
+				"icon": "$(check)"
 			},
 			{
-				"command": "xrayBeams.deleteFolder",
-				"title": "Delete"
+				"command": "xrayBeams.scm.cleanAll",
+				"title": "Discard All Changes",
+				"icon": "$(discard)"
 			},
 			{
-				"command": "xrayBeams.pushFeature",
-				"title": "XrayBeams: Push"
+				"command": "xrayBeams.scm.openFile",
+				"title": "Open File",
+				"icon": "$(go-to-file)"
+			},
+			{
+				"command": "xrayBeams.scm.clean",
+				"title": "Discard Changes",
+				"icon": "$(discard)"
 			}
 		],
 		"menus": {
 			"commandPalette": [
 				{
-					"command": "xrayBeams.pushFeature",
-					"when": "editorLangId == feature"
-				}
-			],
-			"view/title": [
-				{
-					"command": "xrayBeams.refresh",
-					"when": "view == xrayBeams",
-					"group": "navigation@0"
+					"command": "xrayBeams.workspaceInit",
+					"when": "workbenchState != workspace"
 				},
 				{
-					"command": "xrayBeams.newRootFolder",
-					"when": "view == xrayBeams",
-					"group": "navigation@1"
+					"command": "xrayBeams.refresh",
+					"when": "workbenchState == workspace"
 				}
 			],
 			"view/item/context": [
 				{
-					"command": "xrayBeams.newFolder",
-					"when": "view == xrayBeams && viewItem == folder",
-					"group": "navigation"
+					"command": "xrayBeams.orphansView.openFile",
+					"when": "view == orphansView && viewItem == scenario",
+					"group": "inline0"
 				},
 				{
-					"command": "xrayBeams.renameFolder",
-					"when": "view == xrayBeams && viewItem == folder",
-					"group": "1_modification@0"
+					"command": "xrayBeams.orphansView.addToFeature",
+					"when": "view == orphansView && viewItem == scenario",
+					"group": "inline"
+				}
+			],
+			"scm/title": [
+				{
+					"command": "xrayBeams.scm.commit",
+					"group": "navigation",
+					"when": "scmProvider == xray"
 				},
 				{
-					"command": "xrayBeams.deleteFolder",
-					"when": "view == xrayBeams && viewItem == folder",
-					"group": "1_modification@1"
+					"command": "xrayBeams.scm.cleanAll",
+					"when": "scmProvider == xray",
+					"group": "2_stage"
+				}
+			],
+			"scm/resourceGroup/context": [
+				{
+					"command": "xrayBeams.scm.cleanAll",
+					"when": "scmProvider == xray && scmResourceGroup == workingTree",
+					"group": "1_modification"
+				},
+				{
+					"command": "xrayBeams.scm.cleanAll",
+					"when": "scmProvider == xray && scmResourceGroup == workingTree",
+					"group": "inline"
+				}
+			],
+			"scm/resourceFolder/context": [
+				{
+					"command": "xrayBeams.scm.clean",
+					"when": "scmProvider == xray && scmResourceGroup == workingTree",
+					"group": "1_modification"
+				},
+				{
+					"command": "xrayBeams.scm.clean",
+					"when": "scmProvider == xray && scmResourceGroup == workingTree",
+					"group": "inline"
+				}
+			],
+			"scm/resourceState/context": [
+				{
+					"command": "xrayBeams.scm.clean",
+					"when": "scmProvider == xray && scmResourceGroup == workingTree",
+					"group": "1_modification"
+				},
+				{
+					"command": "xrayBeams.scm.openFile",
+					"when": "scmProvider == xray && scmResourceGroup == workingTree",
+					"group": "inline0"
+				},
+				{
+					"command": "xrayBeams.scm.clean",
+					"when": "scmProvider == xray && scmResourceGroup == workingTree",
+					"group": "inline"
 				}
 			]
 		},
-		"viewsWelcome": [
-			{
-				"view": "xrayBeams",
-				"contents": "No folders found.",
-				"when": "vscode.workspace.getConfiguration('xrayBeams').jira.baseUrl"
-			},
-			{
-				"view": "xrayBeams",
-				"contents": "There are missing required setup.\n[Configure](command:xrayBeams.configureSettings)",
-				"when": "xrayBeamsHasInvalidSettings == true"
-			}
-		],
 		"configuration": {
 			"title": "Xray Beams",
 			"properties": {
@@ -122,18 +150,13 @@
 					"type": "string",
 					"format": "uri"
 				},
-				"xrayBeams.jira.port": {
-					"type": "number",
-					"default": 443,
-					"maximum": 65535
-				},
-				"xrayBeams.jira.user.name": {
-					"type": "string"
-				},
-				"xrayBeams.jira.user.password": {
+				"xrayBeams.jira.jql.orphans": {
 					"type": "string"
 				},
 				"xrayBeams.jira.projectKey": {
+					"type": "string"
+				},
+				"xrayBeams.jira.username": {
 					"type": "string"
 				}
 			}
@@ -162,6 +185,8 @@
 	},
 	"dependencies": {
 		"base-64": "^0.1.0",
+		"cucumber-messages": "^8.0.0",
+		"gherkin": "^9.0.0",
 		"node-fetch": "^2.6.0"
 	}
 }
