@@ -101,10 +101,11 @@ export class XrayRepository {
             const keys: { rank: number, key: string }[] = [];
             let i = 1;
 
+            const projectKey = vscode.workspace.getConfiguration("xrayBeams").jira.projectKey;
             const addOrUpdateScenario = async (c: io.cucumber.messages.GherkinDocument.Feature.IFeatureChild) => {
                 const rank = i++;
-                let key = c.scenario.tags.find(t => t.name.startsWith("@EESQA-"))?.name.slice(1);
-                const labels = c.scenario.tags.filter(t => !t.name.startsWith("@EESQA-")).map(t => t.name.slice(1));
+                let key = c.scenario.tags.find(t => t.name.startsWith(`@${projectKey}-`))?.name.slice(1);
+                const labels = c.scenario.tags.filter(t => !t.name.startsWith(`@${projectKey}-`)).map(t => t.name.slice(1));
                 const isScenarioOutline = c.scenario.keyword !== "Scenario";
 
                 let end: number;
