@@ -3,6 +3,14 @@
 	"displayName": "Xray Beams",
 	"description": "Xray test management integration for vscode",
 	"version": "0.0.1",
+	"publisher": "danzelbel",
+	"author": {
+		"name": "danzelbel"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/danzelbel/xray-beams"
+	},
 	"engines": {
 		"vscode": "^1.45.0"
 	},
@@ -10,6 +18,14 @@
 		"Other",
 		"SCM Providers"
 	],
+	"keywords": [
+		"jira",
+		"xray",
+		"bdd",
+		"gherkin",
+		"extension"
+	],
+	"license": "MIT",
 	"activationEvents": [
 		"onFileSystem:xbfs",
 		"onCommand:xrayBeams.workspaceInit",
