@@ -1,3 +1,5 @@
+[![Build Status](https://dev.azure.com/danzelbel/xray-beams/_apis/build/status/danzelbel.xray-beams?branchName=master)](https://dev.azure.com/danzelbel/xray-beams/_build/latest?definitionId=1&branchName=master)
+
 # Xray Beams
 
 Xray test management integration for vscode
