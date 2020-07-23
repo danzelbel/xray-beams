@@ -110,6 +110,7 @@ export class XraySourceControl implements vscode.Disposable {
     changedResources: vscode.SourceControlResourceGroup;
     origEntries: Map<string, xb.Folder>;
     private gherkin: Gherkin;
+    private commitInProgress: boolean;
 
     constructor(context: vscode.ExtensionContext, private lookup: EntryLookup, private xrayRepository: XrayRepository, private xbfs: XrayBeamsFS) {
         this.scm = vscode.scm.createSourceControl("xray", "Xray", vscode.Uri.parse("xbfs:/"));
@@ -130,8 +131,8 @@ export class XraySourceControl implements vscode.Disposable {
 
     async commit(): Promise<void> {
         const resourceStates = this.changedResources.resourceStates;
-        if (resourceStates.length === 0) return;
-
+        if (this.commitInProgress || resourceStates.length === 0) return;
+        this.commitInProgress = true;
         vscode.window.setStatusBarMessage("committing changes", 2000);
         const features = new Map<string, File>();
         resourceStates.forEach(r => {
@@ -141,8 +142,9 @@ export class XraySourceControl implements vscode.Disposable {
         outputChannel.appendLine(`[${new Date().toLocaleTimeString()}] Commit changes`);
         await this.xrayRepository.udpateFeatures(features);
         this.changedResources.resourceStates = [];
+        this.commitInProgress = false;
         vscode.window.setStatusBarMessage("Successfully committed changes", 2000);
-        this.xbfs.refresh();
+        await this.xbfs.refresh();
         vscode.commands.executeCommand("xrayBeams.orphansView.refresh");
     }
 
@@ -396,6 +398,9 @@ export class XrayBeamsFS implements vscode.FileSystemProvider, vscode.Disposable
     }
 
     async createDirectory(uri: vscode.Uri, folder?: xb.Folder): Promise<void> {
+        // Prevent creating a copy of an existing directory
+        if(this.lookup.lookup(uri, true) !== undefined) return;
+
         let basename = path.posix.basename(uri.path);
         let dirname = uri.with({ path: path.posix.dirname(uri.path) });
         let parent = this.lookup.lookupAsDirectory(dirname, false);
