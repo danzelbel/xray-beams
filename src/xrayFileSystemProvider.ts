@@ -42,7 +42,7 @@ export class XrayTextDocumentProvider implements vscode.TextDocumentContentProvi
     constructor(private lookup: EntryLookup, private xrayRepository: XrayRepository) { }
 
     async provideTextDocumentContent(uri: vscode.Uri, token: vscode.CancellationToken): Promise<string> {
-        if (token.isCancellationRequested) return "Canceled";
+        if (token.isCancellationRequested) { return "Canceled"; }
         var entry = this.lookup.lookupAsFile(uri, false);
         return await this.xrayRepository.getFeature(entry.folder);
     }
@@ -131,7 +131,7 @@ export class XraySourceControl implements vscode.Disposable {
 
     async commit(): Promise<void> {
         const resourceStates = this.changedResources.resourceStates;
-        if (this.commitInProgress || resourceStates.length === 0) return;
+        if (this.commitInProgress || resourceStates.length === 0) { return; }
         this.commitInProgress = true;
         vscode.window.setStatusBarMessage("committing changes", 2000);
         const features = new Map<string, File>();
@@ -149,14 +149,14 @@ export class XraySourceControl implements vscode.Disposable {
     }
 
     async cleanAll(): Promise<void> {
-        if (this.changedResources.resourceStates.length === 0) return;
+        if (this.changedResources.resourceStates.length === 0) { return; }
         await this.clean(...this.changedResources.resourceStates);
     }
 
     async clean(...selection: vscode.SourceControlResourceState[]): Promise<void> {
         const affectedFiles = selection.length > 1 ? `${selection.length} files` : path.posix.basename(selection[0].resourceUri.path);
         const action = await vscode.window.showWarningMessage(`Are you sure you want to discard changes in ${affectedFiles}?`, { modal: true }, "Discard Changes");
-        if (action === "Cancel") return;
+        if (action === "Cancel") { return; }
         const clean = async (uri: vscode.Uri) => {
             const file = this.lookup.lookupAsFile(uri, false);
             const content = Buffer.from(await this.xrayRepository.getFeature(file.folder));
@@ -178,8 +178,9 @@ export class XraySourceControl implements vscode.Disposable {
             const isDirty = origContent !== content;
             const resourceStates = this.changedResources.resourceStates;
             if (isDirty) {
-                if (!resourceStates.find(r => r.resourceUri.path === uri.path))
+                if (!resourceStates.find(r => r.resourceUri.path === uri.path)) {
                     this.changedResources.resourceStates = [...resourceStates, await this.getResourceState(uri)];
+                }
             } else {
                 const pristine = resourceStates.filter(r => r.resourceUri.path !== uri.path);
                 this.changedResources.resourceStates = [...pristine];
@@ -300,9 +301,9 @@ export class XrayBeamsFS implements vscode.FileSystemProvider, vscode.Disposable
 
     async readFile(uri: vscode.Uri): Promise<Uint8Array> {
         const entry = this.lookup.lookupAsFile(uri, false);
-        if (!entry)
+        if (!entry) {
             throw vscode.FileSystemError.FileNotFound();
-
+        }
         if (entry.pullData && entry.folder) {
             const content = await this.xrayRepository.getFeature(entry.folder);
             entry.data = Buffer.from(content);
@@ -317,9 +318,9 @@ export class XrayBeamsFS implements vscode.FileSystemProvider, vscode.Disposable
         let parent = this.lookup.lookupParentDirectory(uri);
         let entry = parent.entries.get(basename);
 
-        if (!entry && !folder)
+        if (!entry && !folder) {
             throw vscode.window.showErrorMessage("Only folders are allowed to be created in Xray Beams.");
-
+        }
         if (entry instanceof Directory) {
             throw vscode.FileSystemError.FileIsADirectory(uri);
         }
@@ -339,7 +340,7 @@ export class XrayBeamsFS implements vscode.FileSystemProvider, vscode.Disposable
         entry.data = content;
         this._fireSoon({ type: vscode.FileChangeType.Changed, uri });
 
-        if (!this.initialized) return;
+        if (!this.initialized) { return; }
 
         return await this.scm.fileChanged(uri);
     }
@@ -348,9 +349,9 @@ export class XrayBeamsFS implements vscode.FileSystemProvider, vscode.Disposable
 
     async rename(oldUri: vscode.Uri, newUri: vscode.Uri, options: { overwrite: boolean }, internal?: boolean): Promise<void> {
         const entry = this.lookup.lookup(oldUri, false);
-        if (entry instanceof File && !internal)
+        if (entry instanceof File && !internal) {
             throw vscode.window.showErrorMessage("Only folders are allowed to be moved/renamed in Xray Beams.");
-
+        }
         if (!options.overwrite && this.lookup.lookup(newUri, true)) {
             throw vscode.FileSystemError.FileExists(newUri);
         }
@@ -364,7 +365,7 @@ export class XrayBeamsFS implements vscode.FileSystemProvider, vscode.Disposable
         newParent.entries.set(newName, entry);
         this._fireSoon({ type: vscode.FileChangeType.Deleted, uri: oldUri }, { type: vscode.FileChangeType.Created, uri: newUri });
 
-        if (entry instanceof File) return;
+        if (entry instanceof File) { return; }
 
         this.scm.dirRenamed(oldUri, newUri);
 
@@ -379,9 +380,9 @@ export class XrayBeamsFS implements vscode.FileSystemProvider, vscode.Disposable
 
     async delete(uri: vscode.Uri): Promise<void> {
         let entry = this.lookup.lookup(uri, false);
-        if (entry instanceof File)
+        if (entry instanceof File) {
             throw vscode.window.showErrorMessage("Only folders are allowed to be deleted in Xray Beams.");
-
+        }
         let dirname = uri.with({ path: path.posix.dirname(uri.path) });
         let basename = path.posix.basename(uri.path);
         let parent = this.lookup.lookupAsDirectory(dirname, false);
@@ -399,13 +400,15 @@ export class XrayBeamsFS implements vscode.FileSystemProvider, vscode.Disposable
 
     async createDirectory(uri: vscode.Uri, folder?: xb.Folder): Promise<void> {
         // Prevent creating a copy of an existing directory
-        if(this.lookup.lookup(uri, true) !== undefined) return;
+        if (this.lookup.lookup(uri, true) !== undefined) { return; }
 
         let basename = path.posix.basename(uri.path);
         let dirname = uri.with({ path: path.posix.dirname(uri.path) });
         let parent = this.lookup.lookupAsDirectory(dirname, false);
 
-        if (dirname.path === "/") parent.folder = { id: -1, name: "Test Repository", rank: undefined, testCount: undefined, totalTestCount: undefined, testRepositoryPath: "", folders: undefined };
+        if (dirname.path === "/") {
+            parent.folder = { id: -1, name: "Test Repository", rank: undefined, testCount: undefined, totalTestCount: undefined, testRepositoryPath: "", folders: undefined };
+        }
 
         let entry = new Directory(basename, folder);
         parent.entries.set(entry.name, entry);

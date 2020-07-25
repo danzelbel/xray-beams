@@ -32,7 +32,7 @@ export class XrayRepository {
         const createEntries = (f: xb.Folder) => {
             const path = `${f.testRepositoryPath}/${f.name}`;
             entries.set(path, f);
-            if (f.folders.length > 0) f.folders.forEach(cf => {
+            f.folders.forEach(cf => {
                 cf.testRepositoryPath = `${cf.testRepositoryPath}`;
                 createEntries(cf);
             });
@@ -44,7 +44,7 @@ export class XrayRepository {
     }
 
     async getOrphans(): Promise<xb.Test[]> {
-        if (!this.initialized) return [];
+        if (!this.initialized) { return []; }
         return await this.xrayClient.xrayTestRepository.getOrphans();
     }
 
@@ -129,13 +129,14 @@ export class XrayRepository {
 
                 const steps = lines.slice(start, end).map(l => l.startsWith("\t") ? l.slice(1) : l).join("\n");
 
-                if (key)
+                if (key) {
                     await this.xrayClient.jiraIssue.updateIssue(key, c.scenario.name, c.scenario.description.trim(), labels, testRepositoryPath, steps, isScenarioOutline);
-                else
+                } else {
                     key = await this.xrayClient.jiraIssue.createIssue(c.scenario.name, c.scenario.description.trim(), labels, testRepositoryPath, steps, isScenarioOutline);
+                }
 
                 keys.push({ rank, key });
-            }
+            };
 
             await Promise.all(e.gherkinDocument.feature.children.map(c => addOrUpdateScenario(c)));
 
@@ -143,14 +144,16 @@ export class XrayRepository {
             const sortedKeys = keys.sort((a, b) => a.rank - b.rank).map(k => k.key);
             const tests = await this.xrayClient.xrayTestRepository.getTests(feature.folder.id);
             const removedKeys = tests.map(t => t.key).filter(r => !sortedKeys.includes(r));
-            if (removedKeys.length > 0)
+            if (removedKeys.length > 0) {
                 await this.xrayClient.xrayTestRepository.updateFolderTests(feature.folder.id, [], removedKeys);
+            }
 
             // Sort scenarios
             const testsMap = new Map<string, number>(tests.map(t => [t.key, t.id]));
             const testIds = sortedKeys.map(k => testsMap.get(k));
-            for (let i = 0; i < testIds.length; i++)
+            for (let i = 0; i < testIds.length; i++) {
                 await this.xrayClient.xrayTestRepository.sortTests(feature.folder.id, -1, [testIds[i]]);
+            }
         };
 
         await Promise.all(envelopes.map(e => updateFeature(e)));

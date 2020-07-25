@@ -17,7 +17,7 @@ export class CustomFields implements xb.CustomFields {
 
         try {
             const res = await fetch(url, { method: "GET", headers: headers });
-            if (res.status !== 200) throw Error(res.statusText);
+            if (res.status !== 200) { throw Error(res.statusText); }
 
             const json = await res.json();
             this.testRepositoryPath = json.find(f => f.name === "Test Repository Path").id;

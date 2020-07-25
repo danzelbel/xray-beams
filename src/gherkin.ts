@@ -17,7 +17,7 @@ export class Gherkin {
     async parse(features: Map<string, File>): Promise<messages.IEnvelope[]> {
         this.hasErrors = false;
         diagnosticCollection.clear();
-        if(features.size === 0) return [];
+        if (features.size === 0) { return []; }
 
         const sources: messages.IEnvelope[] = [];
         features.forEach((v, k) => sources.push(makeSourceEnvelope(v.data.toString(), k)));

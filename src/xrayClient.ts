@@ -15,7 +15,7 @@ export class XrayTestRepository implements xb.XrayTestRepository {
 
         try {
             const res = await fetch(url, { method: "GET", headers: headers });
-            if (res.status !== 200) throw new Error(await res.text());
+            if (res.status !== 200) { throw new Error(await res.text()); }
             const data = await res.json();
             return Promise.resolve(data.tests);
         } catch (err) {
@@ -35,7 +35,7 @@ export class XrayTestRepository implements xb.XrayTestRepository {
 
             try {
                 const res = await fetch(url, { method: "GET", headers: headers });
-                if (res.status !== 200) throw new Error(await res.text());
+                if (res.status !== 200) { throw new Error(await res.text()); }
                 const data = await res.json();
                 return Promise.resolve(data);
             } catch (err) {
@@ -44,7 +44,7 @@ export class XrayTestRepository implements xb.XrayTestRepository {
                 outputChannel.show(true);
                 throw err;
             }
-        }
+        };
 
         const total = (await get(0)).total;
         const res = await get(total);
@@ -69,7 +69,7 @@ export class XrayTestRepository implements xb.XrayTestRepository {
 
         try {
             const res = await fetch(url, { method: "GET", headers: headers });
-            if (res.status !== 200) throw new Error(await res.text());
+            if (res.status !== 200) { throw new Error(await res.text()); }
             const data: xb.Folder = await res.json();
             return Promise.resolve([...data.folders]);
         } catch (err) {
@@ -89,8 +89,8 @@ export class XrayTestRepository implements xb.XrayTestRepository {
         const body = JSON.stringify({ name: name });
 
         try {
-            const res = await fetch(url, { method: "POST", headers: headers, body: body })
-            if (res.status !== 200) throw new Error(await res.text());
+            const res = await fetch(url, { method: "POST", headers: headers, body: body });
+            if (res.status !== 200) { throw new Error(await res.text()); }
             const data: xb.Folder = await res.json();
             outputChannel.appendLine(`[created] folder "${name}" (folderId:${data.id})`);
             return Promise.resolve(data);
@@ -111,8 +111,8 @@ export class XrayTestRepository implements xb.XrayTestRepository {
         const body = JSON.stringify({ name: name, rank: rank });
 
         try {
-            const res = await fetch(url, { method: "PUT", headers: headers, body: body })
-            if (res.status !== 200) throw new Error(await res.text());
+            const res = await fetch(url, { method: "PUT", headers: headers, body: body });
+            if (res.status !== 200) { throw new Error(await res.text()); }
             outputChannel.appendLine(`[renamed] folder to "${name}" (folderId:${folderId})`);
             return Promise.resolve();
         } catch (err) {
@@ -132,8 +132,8 @@ export class XrayTestRepository implements xb.XrayTestRepository {
         const body = JSON.stringify([folderId]);
 
         try {
-            const res = await fetch(url, { method: "PUT", headers: headers, body: body })
-            if (res.status !== 200) throw new Error(await res.text());
+            const res = await fetch(url, { method: "PUT", headers: headers, body: body });
+            if (res.status !== 200) { throw new Error(await res.text()); }
             outputChannel.appendLine(`[moved] folder to destination folder id: ${destinationFolderId} (folderId:${folderId})`);
             return Promise.resolve();
         } catch (err) {
@@ -152,8 +152,8 @@ export class XrayTestRepository implements xb.XrayTestRepository {
         };
 
         try {
-            const res = await fetch(url, { method: "DELETE", headers: headers })
-            if (res.status !== 200) throw new Error(await res.text());
+            const res = await fetch(url, { method: "DELETE", headers: headers });
+            if (res.status !== 200) { throw new Error(await res.text()); }
             outputChannel.appendLine(`[deleted] folder (folderId:${folderId})`);
             return Promise.resolve();
         } catch (err) {
@@ -173,8 +173,8 @@ export class XrayTestRepository implements xb.XrayTestRepository {
         const body = JSON.stringify({ add: add, remove: remove });
 
         try {
-            const res = await fetch(url, { method: "PUT", headers: headers, body: body })
-            if (res.status !== 200) throw new Error(await res.text());
+            const res = await fetch(url, { method: "PUT", headers: headers, body: body });
+            if (res.status !== 200) { throw new Error(await res.text()); }
             outputChannel.appendLine(`[updated] folder { added:[${add.join(",")}], removed:[${remove.join(",")}] } (folderId:${folderId})`);
             return Promise.resolve();
         } catch (err) {
@@ -194,8 +194,8 @@ export class XrayTestRepository implements xb.XrayTestRepository {
         const body = JSON.stringify(testIds);
 
         try {
-            const res = await fetch(url, { method: "PUT", headers: headers, body: body })
-            if (res.status !== 200) throw new Error(await res.text());
+            const res = await fetch(url, { method: "PUT", headers: headers, body: body });
+            if (res.status !== 200) { throw new Error(await res.text()); }
             outputChannel.appendLine(`[sorted] tests: [${testIds.join(",")}] with target leaf: ${targetLeaf} (folderId:${folderId})`);
             return Promise.resolve();
         } catch (err) {
@@ -228,7 +228,7 @@ export class JiraIssue implements xb.JiraIssue {
 
         try {
             const res = await fetch(url, { method: "GET", headers: headers });
-            if (res.status !== 200) throw new Error(await res.text());
+            if (res.status !== 200) { throw new Error(await res.text()); }
             const data = await res.json();
             const tests = data.issues;
             return Promise.resolve(tests);
@@ -262,9 +262,9 @@ export class JiraIssue implements xb.JiraIssue {
 
         try {
             const res = await fetch(url, { method: "POST", headers: headers, body: JSON.stringify(body) });
-            if (res.status !== 201) throw new Error(await res.text());
+            if (res.status !== 201) { throw new Error(await res.text()); }
             const data = await res.json();
-            outputChannel.appendLine(`[created] ${path}${path}.feature: ${summary}`);
+            outputChannel.appendLine(`[created] ${path}${path}.feature: ${summary} (key:${data.key})`);
             return Promise.resolve(data.key);
         } catch (err) {
             console.error(err);
@@ -294,8 +294,8 @@ export class JiraIssue implements xb.JiraIssue {
 
         try {
             const res = await fetch(url, { method: "PUT", headers: headers, body: JSON.stringify(body) });
-            if (res.status !== 204) throw new Error(await res.text());
-            outputChannel.appendLine(`[updated] ${path}${path}.feature: ${summary}`);
+            if (res.status !== 204) { throw new Error(await res.text()); }
+            outputChannel.appendLine(`[updated] ${path}${path}.feature: ${summary} (key:${key})`);
             return Promise.resolve();
         } catch (err) {
             console.error(err);

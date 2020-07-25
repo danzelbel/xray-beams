@@ -17,25 +17,25 @@ export class Config implements xb.Config {
     async setConfig(): Promise<boolean> {
         if (!this.baseUrl) {
             const baseUrl = await vscode.window.showInputBox({ placeHolder: "XrayBeams: Base URL", "ignoreFocusOut": true });
-            if (!baseUrl || !baseUrl.trim()) return;
+            if (!baseUrl || !baseUrl.trim()) { return; }
             this.cfg.update("jira.baseUrl", baseUrl, true);
         }
 
         if (!this.projectKey) {
             const projectKey = await vscode.window.showInputBox({ placeHolder: "XrayBeams: Project Key", "ignoreFocusOut": true });
-            if (!projectKey || !projectKey.trim()) return;
+            if (!projectKey || !projectKey.trim()) { return; }
             this.cfg.update("jira.projectKey", projectKey, true);
         }
 
         if (!this.username) {
             const username = await vscode.window.showInputBox({ placeHolder: "XrayBeams: Jira Username", "ignoreFocusOut": true });
-            if (!username || !username.trim()) return;
+            if (!username || !username.trim()) { return; }
             this.cfg.update("jira.username", username, true);
         }
 
         if (!this.password) {
             const password = await vscode.window.showInputBox({ placeHolder: "XrayBeams: Jira Password", "ignoreFocusOut": true, "password": true });
-            if (!password || !password.trim()) return;
+            if (!password || !password.trim()) { return; }
             this._password = password;
         }
 

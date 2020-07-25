@@ -21,7 +21,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(vscode.workspace.onDidRenameFiles(async e => {
 		await Promise.all(e.files.map(async v => {
-			if (v.newUri.scheme !== "xbfs" && lookup.lookup(v.newUri, false) instanceof Directory) return;
+			if (v.newUri.scheme !== "xbfs" && lookup.lookup(v.newUri, false) instanceof Directory) { return; }
 			const oldName = `${path.posix.basename(v.oldUri.path)}.feature`;
 			const newName = `${path.posix.basename(v.newUri.path)}.feature`;
 			await xbfs.rename(vscode.Uri.joinPath(v.newUri, oldName), vscode.Uri.joinPath(v.newUri, newName), { overwrite: true }, true);
@@ -36,7 +36,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	}));
 
 	context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(async e => {
-		if (!e.affectsConfiguration("xrayBeams")) return;
+		if (!e.affectsConfiguration("xrayBeams")) { return; }
 		await xbfs.refresh();
 		orphansView.refresh();
 	}));
@@ -44,7 +44,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	async function initWorkspace(setup: boolean = false): Promise<void> {
 		if (setup) {
 			const success = vscode.workspace.updateWorkspaceFolders(0, 0, { uri: vscode.Uri.parse("xbfs:/"), name: cfg.projectKey });
-			if (!success) throw new Error("Initalize workspace failed!");
+			if (!success) { throw new Error("Initalize workspace failed!"); }
 			return;
 		}
 
@@ -52,7 +52,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		if (setup || (wsf && wsf.length === 1 && wsf[0].name === cfg.projectKey && wsf[0].uri.scheme === "xbfs")) {
 			vscode.commands.executeCommand("workbench.view.explorer");
 			const isSet = await cfg.setConfig();
-			if (!isSet) return;
+			if (!isSet) { return; }
 
 			vscode.window.setStatusBarMessage("Loading folders...", 2000);
 			await xrayRepository.init(cfg);
