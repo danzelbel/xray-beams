@@ -1,8 +1,9 @@
 {
+	"preview": true,
 	"name": "xray-beams",
 	"displayName": "Xray Beams",
 	"description": "Xray test management integration for vscode",
-	"version": "0.0.1",
+	"version": "1.0.0-alpha",
 	"publisher": "danzelbel",
 	"author": {
 		"name": "danzelbel"
@@ -15,8 +16,7 @@
 		"vscode": "^1.45.0"
 	},
 	"categories": [
-		"Other",
-		"SCM Providers"
+		"Other"
 	],
 	"keywords": [
 		"jira",
@@ -50,6 +50,11 @@
 			{
 				"command": "xrayBeams.refresh",
 				"title": "XrayBeams: Refresh"
+			},
+			{
+				"command": "xrayBeams.orphansView.refresh",
+				"title": "Refresh",
+				"icon": "$(refresh)"
 			},
 			{
 				"command": "xrayBeams.orphansView.openFile",
@@ -93,6 +98,13 @@
 					"when": "workbenchState == workspace"
 				}
 			],
+			"view/title": [
+				{
+					"command": "xrayBeams.orphansView.refresh",
+					"when": "view == orphansView",
+					"group": "navigation"
+				}
+			],
 			"view/item/context": [
 				{
 					"command": "xrayBeams.orphansView.openFile",
@@ -108,8 +120,8 @@
 			"scm/title": [
 				{
 					"command": "xrayBeams.scm.commit",
-					"group": "navigation",
-					"when": "scmProvider == xray"
+					"when": "scmProvider == xray",
+					"group": "navigation"
 				},
 				{
 					"command": "xrayBeams.scm.cleanAll",
@@ -167,7 +179,8 @@
 					"format": "uri"
 				},
 				"xrayBeams.jira.jql.orphans": {
-					"type": "string"
+					"type": "string",
+					"description": "Additional jql filter"
 				},
 				"xrayBeams.jira.projectKey": {
 					"type": "string"

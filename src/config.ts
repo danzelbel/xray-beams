@@ -8,8 +8,8 @@ export class Config implements xb.Config {
 
     get baseUrl(): string { return this.cfg.jira.baseUrl; }
     get projectKey(): string { return this.cfg.jira.projectKey; }
-    get jqlOrphans(): string { return this.cfg.jira.jql.orphans; }
     get username(): string { return this.cfg.jira.username; };
+    get jqlOrphans(): string { return this.cfg.jira.jql.orphans; }
 
     private _password: string;
     get password(): string { return this._password; };
@@ -37,11 +37,6 @@ export class Config implements xb.Config {
             const password = await vscode.window.showInputBox({ placeHolder: "XrayBeams: Jira Password", "ignoreFocusOut": true, "password": true });
             if (!password || !password.trim()) { return; }
             this._password = password;
-        }
-
-        if (!this.jqlOrphans) {
-            const jqlOrphans = await vscode.window.showInputBox({ placeHolder: "XrayBeams: Orphans JQL", "ignoreFocusOut": true });
-            if (jqlOrphans && jqlOrphans.length > 0) this.cfg.update("jira.jql.orphans", jqlOrphans, true);
         }
 
         // All properties should have a value

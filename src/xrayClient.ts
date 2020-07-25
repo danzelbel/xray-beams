@@ -29,7 +29,17 @@ export class XrayTestRepository implements xb.XrayTestRepository {
 
     async getOrphans(): Promise<xb.Test[]> {
         const get = async (pageSize: number) => {
-            const url = `${this.cfg.baseUrl}/rest/raven/1.0/folderStructure/allOrphanTests?entityKey=${this.cfg.projectKey}&pageStart=0&pageSize=${pageSize}&jql=${this.cfg.jqlOrphans}`;
+            const url = new URL(`${this.cfg.baseUrl}/rest/raven/1.0/folderStructure/allOrphanTests`);
+            const params = {
+                entityKey: this.cfg.projectKey,
+                pageStart: "0",
+                pageSize: `${pageSize}`,
+                jql: '"Test Type"=Cucumber'
+            };
+            if (this.cfg.jqlOrphans.trim() !== '') {
+                params.jql = `${params.jql} and ${this.cfg.jqlOrphans}`;
+            }
+            url.search = new URLSearchParams(params).toString();
             const headers = {
                 Authorization: `Basic ${encode(this.cfg.username + ":" + this.cfg.password)}`
             };
