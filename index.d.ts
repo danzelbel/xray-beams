@@ -280,7 +280,7 @@ declare module 'xray-beams' {
         getIssues(keys: string[]): Thenable<Issue[]>;
 
         /**
-         * Creates an issue or a sub-task from a JSON representation.
+         * Creates a test or a sub-task from a JSON representation.
          * https://docs.atlassian.com/software/jira/docs/api/REST/8.8.1/#api/2/issue-createIssue
          * @param summary Test's summary
          * @param desc Test's description
@@ -290,10 +290,10 @@ declare module 'xray-beams' {
          * @param isScenarioOutline Test is a scenario outline
          * @returns A thenable that resolves with the issue key.
          */
-        createIssue(summary: string, desc: string, labels: string[], path: string, steps: string, isScenarioOutline?: boolean): Thenable<string>;
+        createTest(summary: string, desc: string, labels: string[], path: string, steps: string, isScenarioOutline?: boolean): Thenable<string>;
 
         /**
-         * Edits an issue from a JSON representation.
+         * Edits a test from a JSON representation.
          * https://docs.atlassian.com/software/jira/docs/api/REST/8.8.1/#api/2/issue-editIssue
          * @param key Test's issue key
          * @param summary Test's summary
@@ -304,7 +304,7 @@ declare module 'xray-beams' {
          * @param isScenarioOutline Test is a scenario outline
          * @returns A thenable indicating that the issue has been updated.
          */
-        updateIssue(key: string, summary: string, desc: string, labels: string[], path: string, steps: string, isScenarioOutline?: boolean): Thenable<void>;
+        updateTest(key: string, summary: string, desc: string, labels: string[], path: string, steps: string, isScenarioOutline?: boolean): Thenable<void>;
     }
 
     export interface XrayClient {

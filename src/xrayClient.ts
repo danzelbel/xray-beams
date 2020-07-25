@@ -17,7 +17,8 @@ export class XrayTestRepository implements xb.XrayTestRepository {
             const res = await fetch(url, { method: "GET", headers: headers });
             if (res.status !== 200) { throw new Error(await res.text()); }
             const data = await res.json();
-            return Promise.resolve(data.tests);
+            const tests = data.tests.filter((d: xb.Test) => d.testType === "Cucumber");
+            return Promise.resolve(tests);
         } catch (err) {
             console.error(err);
             outputChannel.appendLine(`[get] list of tests in folder id: ${folderId}\n${err}`);
@@ -240,7 +241,7 @@ export class JiraIssue implements xb.JiraIssue {
         }
     }
 
-    async createIssue(summary: string, desc: string, labels: string[], path: string, steps: string, isScenarioOutline?: boolean): Promise<string> {
+    async createTest(summary: string, desc: string, labels: string[], path: string, steps: string, isScenarioOutline?: boolean): Promise<string> {
         const url = new URL(`${this.cfg.baseUrl}/rest/api/2/issue`);
         const headers = {
             Authorization: `Basic ${encode(this.cfg.username + ":" + this.cfg.password)}`,
@@ -274,7 +275,7 @@ export class JiraIssue implements xb.JiraIssue {
         }
     }
 
-    async updateIssue(key: string, summary: string, desc: string, labels: string[], path: string, steps: string, isScenarioOutline?: boolean): Promise<void> {
+    async updateTest(key: string, summary: string, desc: string, labels: string[], path: string, steps: string, isScenarioOutline?: boolean): Promise<void> {
         const url = new URL(`${this.cfg.baseUrl}/rest/api/2/issue/${key}`);
         const headers = {
             Authorization: `Basic ${encode(this.cfg.username + ":" + this.cfg.password)}`,
@@ -332,4 +333,4 @@ export class XrayTest {
     get cucumberScenario(): string | undefined {
         return this.issue.fields[this.cf.cucumberScenario];
     }
-}
+}	

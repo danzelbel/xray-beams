@@ -61,8 +61,8 @@ export class XrayRepository {
     }
 
     async getScenario(key: string): Promise<string> {
-        const issues = await this.xrayClient.jiraIssue.getIssues([key]);
-        return await this.getScenarioContent(issues[0]);
+        const tests = await this.xrayClient.jiraIssue.getIssues([key]);
+        return await this.getScenarioContent(tests[0]);
     }
 
     async createFolder(name: string, parentFolder: xb.Folder): Promise<xb.Folder> {
@@ -130,9 +130,9 @@ export class XrayRepository {
                 const steps = lines.slice(start, end).map(l => l.startsWith("\t") ? l.slice(1) : l).join("\n");
 
                 if (key) {
-                    await this.xrayClient.jiraIssue.updateIssue(key, c.scenario.name, c.scenario.description.trim(), labels, testRepositoryPath, steps, isScenarioOutline);
+                    await this.xrayClient.jiraIssue.updateTest(key, c.scenario.name, c.scenario.description.trim(), labels, testRepositoryPath, steps, isScenarioOutline);
                 } else {
-                    key = await this.xrayClient.jiraIssue.createIssue(c.scenario.name, c.scenario.description.trim(), labels, testRepositoryPath, steps, isScenarioOutline);
+                    key = await this.xrayClient.jiraIssue.createTest(c.scenario.name, c.scenario.description.trim(), labels, testRepositoryPath, steps, isScenarioOutline);
                 }
 
                 keys.push({ rank, key });
