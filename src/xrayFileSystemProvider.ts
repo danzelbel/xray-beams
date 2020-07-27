@@ -11,7 +11,7 @@ export class File implements vscode.FileStat {
     mtime: number;
     size: number;
     data?: Uint8Array;
-    pullData: boolean = true;
+    isDirty: boolean = false;
 
     constructor(public name: string, public folder?: xb.Folder) {
         this.type = vscode.FileType.File;
@@ -175,9 +175,9 @@ export class XraySourceControl implements vscode.Disposable {
             const file = this.lookup.lookupAsFile(uri, false);
             const origContent = await this.xrayRepository.getFeature(file.folder);
             const content = file.data.toString();
-            const isDirty = origContent !== content;
+            file.isDirty = origContent !== content;
             const resourceStates = this.changedResources.resourceStates;
-            if (isDirty) {
+            if (file.isDirty) {
                 if (!resourceStates.find(r => r.resourceUri.path === uri.path)) {
                     this.changedResources.resourceStates = [...resourceStates, await this.getResourceState(uri)];
                 }
@@ -271,7 +271,7 @@ export class XrayBeamsFS implements vscode.FileSystemProvider, vscode.Disposable
         await Promise.all(pendingChangesUris.map(async uri => {
             const file = this.lookup.lookupAsFile(uri, false);
             file.data = pendingChanges.get(uri);
-            file.pullData = false;
+            file.isDirty = false;
             await this.scm.fileChanged(uri);
             // TODO: MUST REFRESH THE SCM CACHED CONTENT
         }));
@@ -304,11 +304,10 @@ export class XrayBeamsFS implements vscode.FileSystemProvider, vscode.Disposable
         if (!entry) {
             throw vscode.FileSystemError.FileNotFound();
         }
-        if (entry.pullData && entry.folder) {
+        if (!entry.isDirty && entry.folder) {
             const content = await this.xrayRepository.getFeature(entry.folder);
             entry.data = Buffer.from(content);
             entry.size = entry.data.byteLength;
-            entry.pullData = false;
         }
         return Promise.resolve(entry.data);
     }
