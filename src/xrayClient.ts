@@ -347,7 +347,7 @@ export class JiraIssue implements xb.JiraIssue {
                 outputChannel.show(true);
                 throw err;
             }
-        }
+        };
 
         const total = (await get(0)).total;
         const res = await get(total);

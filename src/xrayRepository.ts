@@ -49,7 +49,7 @@ export class XrayRepository {
     }
 
     async getPreConditions(): Promise<xb.Issue[]> {
-        if (!this.initialized) return [];
+        if (!this.initialized) { return []; }
         return await this.xrayClient.jiraIssue.getPreConditions();
     }
 
