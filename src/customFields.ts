@@ -8,6 +8,8 @@ export class CustomFields implements xb.CustomFields {
     testRepositoryPath: string;
     cucumberTestType: string;
     cucumberScenario: string;
+    preConditionType: string;
+    conditions: string;
 
     async init(cfg: xb.Config) {
         const url = `${cfg.baseUrl}/rest/api/2/field`;
@@ -24,6 +26,8 @@ export class CustomFields implements xb.CustomFields {
             this.testType = json.find(f => f.name === "Test Type").id;
             this.cucumberTestType = json.find(f => f.name === "Cucumber Test Type").id;
             this.cucumberScenario = json.find(f => f.name === "Cucumber Scenario").id;
+            this.preConditionType = json.find(f => f.name === "Pre-Condition Type").id;
+            this.conditions = json.find(f => f.name === "Conditions").id;
         } catch (err) {
             console.error(err);
             throw vscode.window.showErrorMessage(err.message);

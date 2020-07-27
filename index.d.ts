@@ -11,6 +11,7 @@ declare module 'xray-beams' {
         username: string;
         password: string;
         jqlOrphans: string;
+        jqlPreConditions: string;
     }
 
     /**
@@ -221,6 +222,16 @@ declare module 'xray-beams' {
         cucumberScenario: string;
 
         /**
+         * default Jira select field
+         */
+        preConditionType: string;
+
+        /**
+         * default Jira text field
+         */
+        conditions: string;
+
+        /**
          * Retrieves and then assigns the custom field values
          * @param cfg Config
 		 * @returns A thenable indicating that the init is done.
@@ -305,6 +316,36 @@ declare module 'xray-beams' {
          * @returns A thenable indicating that the issue has been updated.
          */
         updateTest(key: string, summary: string, desc: string, labels: string[], path: string, steps: string, isScenarioOutline?: boolean): Thenable<void>;
+
+        /**
+         * Searches for pre-conditions using JQL.
+         * https://docs.atlassian.com/software/jira/docs/api/REST/8.8.1/#api/2/search
+         * @returns A thenable that resolves with the array of issues.
+         */
+        getPreConditions(): Thenable<Issue[]>;
+
+        /**
+         * Creates a pre-condition from a JSON representation.
+         * https://docs.atlassian.com/software/jira/docs/api/REST/8.8.1/#api/2/issue-createIssue
+         * @param summary Pre-Condition's summary
+         * @param desc Pre-Condition's description
+         * @param labels Array of all Pre-Condition's assigned labels
+         * @param steps Pre-Condition's scenario steps
+         * @returns A thenable that resolves with the issue key.
+         */
+        createPreCondition(summary: string, desc: string, labels: string[], steps: string): Thenable<string>;
+
+        /**
+         * Edits a pre-condition from a JSON representation.
+         * https://docs.atlassian.com/software/jira/docs/api/REST/8.8.1/#api/2/issue-createIssue
+         * @param key Pre-Condition's issue key
+         * @param summary Pre-Condition's summary
+         * @param desc Pre-Condition's description
+         * @param labels Array of all Pre-Condition's assigned labels
+         * @param steps Pre-Condition's scenario steps
+         * @returns A thenable that resolves with the issue key.
+         */
+        updatePreCondition(key: string, summary: string, desc: string, labels: string[], steps: string): Thenable<void>;
     }
 
     export interface XrayClient {

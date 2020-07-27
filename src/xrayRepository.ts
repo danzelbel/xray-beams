@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import * as xb from "xray-beams";
 import { CustomFields } from "./customFields";
-import { JiraIssue, XrayTestRepository, XrayTest } from "./xrayClient";
+import { XrayTestRepository, JiraIssue } from "./xrayClient";
 import * as path from "path";
 import { Gherkin } from "./gherkin";
 import { File } from "./xrayFileSystemProvider";
@@ -48,21 +48,38 @@ export class XrayRepository {
         return await this.xrayClient.xrayTestRepository.getOrphans();
     }
 
+    async getPreConditions(): Promise<xb.Issue[]> {
+        if (!this.initialized) return [];
+        return await this.xrayClient.jiraIssue.getPreConditions();
+    }
+
     async getFeature(folder: xb.Folder): Promise<string> {
+        const preConditions = await this.xrayClient.jiraIssue.getPreConditions();
+        const preCondition = preConditions.find(c => c.fields.labels.includes(`folderId:${folder.id}`));
+        let background = "";
+        if (preCondition && preCondition.fields[this.xrayClient.customFields.conditions]) {
+            background = `\n${this.getPreConditionContent(preCondition)}`;
+        }
+
         const tests = await this.xrayClient.xrayTestRepository.getTests(folder.id);
         let scenarios = [];
         if (tests.length > 0) {
             const keys = tests.map(t => t.key);
             const issues = await this.xrayClient.jiraIssue.getIssues(keys) || [];
             issues.sort((a, b) => keys.indexOf(a.key) - keys.indexOf(b.key));
-            scenarios = await Promise.all(issues.map(i => this.getScenarioContent(i)));
+            scenarios = issues.map(i => this.getScenarioContent(i));
         }
-        return `Feature: ${folder.name}\n\n${scenarios.join("\n")}`;
+        return `Feature: ${folder.name}\n${background}\n${scenarios.join("\n")}`;
     }
 
     async getScenario(key: string): Promise<string> {
         const tests = await this.xrayClient.jiraIssue.getIssues([key]);
-        return await this.getScenarioContent(tests[0]);
+        return this.getScenarioContent(tests[0]);
+    }
+
+    async getPreCondition(key: string): Promise<string> {
+        const preConditions = await this.xrayClient.jiraIssue.getIssues([key]);
+        return this.getPreConditionContent(preConditions[0]);
     }
 
     async createFolder(name: string, parentFolder: xb.Folder): Promise<xb.Folder> {
@@ -83,6 +100,14 @@ export class XrayRepository {
 
     async deleteFolder(folder: xb.Folder): Promise<void> {
         await this.xrayClient.xrayTestRepository.deleteFolder(folder.id);
+        // Remove associated background
+        const preConditions = await this.xrayClient.jiraIssue.getPreConditions();
+        const preCondition = preConditions.find(c => c.fields.labels.includes(`folderId:${folder.id}`));
+        if (preCondition) {
+            const f = preCondition.fields;
+            const labels = f.labels.filter(l => l !== `folderId:${folder.id}`);
+            this.xrayClient.jiraIssue.updatePreCondition(preCondition.key, f.summary, f.description, labels, f[this.xrayClient.customFields.conditions]);
+        }
         vscode.window.setStatusBarMessage(`Successfully deleted "${folder.testRepositoryPath}/${folder.name}"`, 2000);
     }
 
@@ -138,7 +163,42 @@ export class XrayRepository {
                 keys.push({ rank, key });
             };
 
-            await Promise.all(e.gherkinDocument.feature.children.map(c => addOrUpdateScenario(c)));
+            await Promise.all(e.gherkinDocument.feature.children.filter(c => c.scenario).map(c => addOrUpdateScenario(c)));
+
+            // Add/Update background
+            const bg = e.gherkinDocument.feature.children.find(c => c.background)?.background;
+            if (bg) {
+                const summary = bg.name !== '' ? bg.name : e.gherkinDocument.feature.name;
+                const label = `folderId:${features.get(e.gherkinDocument.uri).folder.id}`;
+                const lastStep = bg.steps[bg.steps.length - 1];
+                const end = lastStep.dataTable?.rows[lastStep.dataTable.rows.length - 1].location.line ?? lastStep.location.line;
+
+                let start: number;
+                if (bg.description !== '') {
+                    start = bg.location.line
+                        + lines.slice(bg.location.line, end).indexOf(bg.description) // since there's no location property for description
+                        + bg.description.split("\n").length;
+                } else {
+                    start = bg.location.line;
+                }
+
+                const steps = lines.slice(start, end).map(l => l.startsWith("\t") ? l.slice(1) : l).join("\n");
+
+                // Let's find a background key which should be between the feature and background names
+                let key = e.gherkinDocument.comments
+                    .filter(c => c.location.line > e.gherkinDocument.feature.location.line)
+                    .find(c => c.text.startsWith(`#@${projectKey}-`))?.text.slice(2);
+                if (key) {
+                    // Update the labels to remap this pre-condition to this folder
+                    const preCondition: xb.Issue = (await this.xrayClient.jiraIssue.getIssues([key]))[0];
+                    const labels = preCondition.fields.labels.filter(l => !l.startsWith("folderId:"));
+                    labels.push(label);
+
+                    await this.xrayClient.jiraIssue.updatePreCondition(key, summary, bg.description, labels, steps);
+                } else {
+                    key = await this.xrayClient.jiraIssue.createPreCondition(summary, bg.description, [label], steps);
+                }
+            }
 
             // Remove orphaned scenarios
             const sortedKeys = keys.sort((a, b) => a.rank - b.rank).map(k => k.key);
@@ -159,26 +219,37 @@ export class XrayRepository {
         await Promise.all(envelopes.map(e => updateFeature(e)));
     }
 
-    private async getScenarioContent(issue: xb.Issue): Promise<string> {
-        const t = new XrayTest(issue, this.xrayClient.customFields);
-        let content: string;
+    private getScenarioContent(issue: xb.Issue): string {
+        issue.fields.labels.push(`${issue.key}`);
+        let content = `${issue.fields.labels.map(l => `@${l}`).join(" ")}\n`;
 
-        /* labels */
-        t.issue.fields.labels.push(`${t.issue.key}`);
-        if (t.issue.fields.labels.length > 0)
-            content = `${t.issue.fields.labels.map(l => `@${l}`).join(" ")}\n`;
+        const scenarioType = issue.fields[this.xrayClient.customFields.cucumberTestType].value;
+        content += `${scenarioType}: ${issue.fields.summary}\n`;
 
-        /* scenario name */
-        const scenarioType = t.cucumberTestType ?? "Scenario";
-        content += `${scenarioType}: ${t.issue.fields.summary}\n`;
+        if (issue.fields.description) {
+            content += `\t${issue.fields.description}\n`;
+        }
 
-        /* description */
-        if (t.issue.fields.description)
-            content += `\t${t.issue.fields.description}\n`;
+        let steps = issue.fields[this.xrayClient.customFields.cucumberScenario];
+        if (steps) {
+            content += `\t${steps.replace(/\n/g, "\n\t")}\n`;
+        }
 
-        /* steps */
-        if (t.cucumberScenario)
-            content += `\t${t.cucumberScenario.replace(/\n/g, "\n\t")}\n`;
+        return content;
+    }
+
+    private getPreConditionContent(issue: xb.Issue): string {
+        let content = `#@${issue.key}\n`;
+        content += `Background: ${issue.fields.summary}\n`;
+
+        if (issue.fields.description) {
+            content += `\t${issue.fields.description}\n`;
+        }
+
+        let steps = issue.fields[this.xrayClient.customFields.conditions];
+        if (steps) {
+            content += `\t${steps.replace(/\n/g, "\n\t")}\n`;
+        }
 
         return content;
     }

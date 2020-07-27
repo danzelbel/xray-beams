@@ -226,7 +226,8 @@ export class JiraIssue implements xb.JiraIssue {
         const customFields = [
             this.cf.testRepositoryPath,
             this.cf.cucumberTestType,
-            this.cf.cucumberScenario
+            this.cf.cucumberScenario,
+            this.cf.conditions
         ];
         const params = {
             fields: `issuetype,summary,description,labels,${customFields.join(",")}`,
@@ -315,32 +316,102 @@ export class JiraIssue implements xb.JiraIssue {
             throw err;
         }
     }
+
+    async getPreConditions(): Promise<xb.Issue[]> {
+        const get = async (maxResults: number) => {
+            const url = new URL(`${this.cfg.baseUrl}/rest/api/2/search`);
+            const customFields = [
+                this.cf.conditions
+            ];
+            const params = {
+                maxResults: `${maxResults}`,
+                fields: `issuetype,summary,description,labels,${customFields.join(",")}`,
+                jql: `project=${this.cfg.projectKey} and issuetype in (Pre-Condition) and "Pre-Condition Type"=Cucumber`
+            };
+            if (this.cfg.jqlPreConditions.trim() !== '') {
+                params.jql = `${params.jql} and ${this.cfg.jqlPreConditions}`;
+            }
+            url.search = new URLSearchParams(params).toString();
+            const headers = {
+                Authorization: `Basic ${encode(this.cfg.username + ":" + this.cfg.password)}`
+            };
+
+            try {
+                const res = await fetch(url, { method: "GET", headers: headers });
+                if (res.status !== 200) { throw new Error(await res.text()); }
+                const data = await res.json();
+                return Promise.resolve(data);
+            } catch (err) {
+                console.error(err);
+                outputChannel.appendLine(`[get] all pre-conditions\n${err}`);
+                outputChannel.show(true);
+                throw err;
+            }
+        }
+
+        const total = (await get(0)).total;
+        const res = await get(total);
+        return Promise.resolve(res.issues);
+    }
+
+    async createPreCondition(summary: string, desc: string, labels: string[], steps: string): Promise<string> {
+        const url = new URL(`${this.cfg.baseUrl}/rest/api/2/issue`);
+        const headers = {
+            Authorization: `Basic ${encode(this.cfg.username + ":" + this.cfg.password)}`,
+            "Content-Type": "application/json"
+        };
+        const body = {
+            fields: {
+                project: { key: this.cfg.projectKey },
+                issuetype: { name: "Pre-Condition" },
+                summary: summary,
+                description: desc,
+                labels: labels
+            }
+        };
+        body.fields[this.cf.preConditionType] = { value: "Cucumber" };
+        body.fields[this.cf.conditions] = steps;
+
+        try {
+            const res = await fetch(url, { method: "POST", headers: headers, body: JSON.stringify(body) });
+            if (res.status !== 201) { throw new Error(await res.text()); }
+            const data = await res.json();
+            outputChannel.appendLine(`[created] pre-condition: ${summary} (key:${data.key})`);
+            return Promise.resolve(data.key);
+        } catch (err) {
+            console.error(err);
+            outputChannel.appendLine(`[create] pre-condition: ${summary}\n${err}`);
+            outputChannel.show(true);
+            throw err;
+        }
+    }
+
+    async updatePreCondition(key: string, summary: string, desc: string, labels: string[], steps: string): Promise<void> {
+        const url = new URL(`${this.cfg.baseUrl}/rest/api/2/issue/${key}`);
+        const headers = {
+            Authorization: `Basic ${encode(this.cfg.username + ":" + this.cfg.password)}`,
+            "Content-Type": "application/json"
+        };
+        const body = {
+            fields: {
+                summary: summary,
+                description: desc,
+                labels: labels
+            }
+        };
+        body.fields[this.cf.preConditionType] = { value: "Cucumber" };
+        body.fields[this.cf.conditions] = steps;
+
+        try {
+            const res = await fetch(url, { method: "PUT", headers: headers, body: JSON.stringify(body) });
+            if (res.status !== 204) { throw new Error(await res.text()); }
+            outputChannel.appendLine(`[updated] pre-condition: ${summary} (key:${key})`);
+            return Promise.resolve();
+        } catch (err) {
+            console.error(err);
+            outputChannel.appendLine(`[update] pre-condition: ${summary}\n${err}`);
+            outputChannel.show(true);
+            throw err;
+        }
+    }
 }
-
-export class XrayTest {
-    constructor(public issue: xb.Issue, private cf: xb.CustomFields) { }
-
-	/**
-	 * Test repository path
-	 * Empty means it's orphaned
-	 */
-    get testRepositoryPath(): string {
-        return this.issue.fields[this.cf.testRepositoryPath];
-    }
-
-	/**
-	 * Cucumber test type [Scenario|Scenario Outline]
-	 * Undefined if test type is not "Cucumber"
-	 */
-    get cucumberTestType(): string | undefined {
-        return this.issue.fields[this.cf.cucumberTestType]?.value;
-    }
-
-	/**
-	 * The gherkin steps
-	 * Undefined if test type is not "Cucumber"
-	 */
-    get cucumberScenario(): string | undefined {
-        return this.issue.fields[this.cf.cucumberScenario];
-    }
-}	

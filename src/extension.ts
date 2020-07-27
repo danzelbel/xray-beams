@@ -3,6 +3,7 @@ import { Config } from "./config";
 import { XrayRepository } from "./xrayRepository";
 import { XrayBeamsFS, XrayTextDocumentProvider, EntryLookup, Directory } from "./xrayFileSystemProvider";
 import { OrphansView } from "./orphansView";
+import { PreConditionsView } from "./preConditionsView";
 import * as path from "path";
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -10,6 +11,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	const lookup = new EntryLookup();
 	const xrayRepository = new XrayRepository();
 	const orphansView = new OrphansView(context, xrayRepository);
+	const preConditionsView = new PreConditionsView(context, xrayRepository);
 
 	const xrayTextDocumentProvider = new XrayTextDocumentProvider(lookup, xrayRepository);
 	context.subscriptions.push(vscode.workspace.registerTextDocumentContentProvider("xbfs-scm", xrayTextDocumentProvider));
@@ -28,17 +30,20 @@ export async function activate(context: vscode.ExtensionContext) {
 		}));
 		await xbfs.refresh();
 		orphansView.refresh();
+		preConditionsView.refresh();
 	}));
 
 	context.subscriptions.push(vscode.workspace.onDidDeleteFiles(async e => {
 		await xbfs.refresh();
 		orphansView.refresh();
+		preConditionsView.refresh();
 	}));
 
 	context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(async e => {
 		if (!e.affectsConfiguration("xrayBeams")) { return; }
 		await xbfs.refresh();
 		orphansView.refresh();
+		preConditionsView.refresh();
 	}));
 
 	async function initWorkspace(setup: boolean = false): Promise<void> {
@@ -58,6 +63,7 @@ export async function activate(context: vscode.ExtensionContext) {
 			await xrayRepository.init(cfg);
 			await xbfs.refresh();
 			orphansView.refresh();
+			preConditionsView.refresh();
 			vscode.window.setStatusBarMessage("Loading folders done", 2000);
 		}
 	}

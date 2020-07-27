@@ -10,6 +10,7 @@ Xray test management integration for vscode
 - View tests as feature scenarios
 - Manage tests
 - View Orphans
+- View Pre-Conditions
 - Detect feature problems
 
 ## Extension Settings
@@ -25,6 +26,7 @@ This extension contributes the following settings:
 
 ### Optional
 - `xrayBeams.jira.jql.orphans`: The Orphans "JQL Search" filter
+- `xrayBeams.jira.jql.preConditions`: The Additional jql filter for pre-conditions
 
 ## Known Issues
 

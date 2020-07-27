@@ -146,6 +146,7 @@ export class XraySourceControl implements vscode.Disposable {
         vscode.window.setStatusBarMessage("Successfully committed changes", 2000);
         await this.xbfs.refresh();
         vscode.commands.executeCommand("xrayBeams.orphansView.refresh");
+        vscode.commands.executeCommand("xrayBeams.preConditionsView.refresh");
     }
 
     async cleanAll(): Promise<void> {
@@ -420,6 +421,7 @@ export class XrayBeamsFS implements vscode.FileSystemProvider, vscode.Disposable
             await this.xrayRepository.createFolder(basename, parent.folder);
             await this.refresh();
             vscode.commands.executeCommand("xrayBeams.orphansView.refresh");
+            vscode.commands.executeCommand("xrayBeams.preConditionsView.refresh");
         } else {
             // Let's create the arbitrary feature file for this directory too
             this.writeFile(vscode.Uri.joinPath(uri, `${entry.name}.feature`), Buffer.from(`Feature: ${entry.name}`), { create: true, overwrite: true }, folder);

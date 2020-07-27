@@ -39,6 +39,10 @@
 				{
 					"id": "orphansView",
 					"name": "XrayBeams Orphans"
+				},
+				{
+					"id": "preConditionsView",
+					"name": "XrayBeams Pre-Conditions"
 				}
 			]
 		},
@@ -63,6 +67,21 @@
 			},
 			{
 				"command": "xrayBeams.orphansView.addToFeature",
+				"title": "Add to Current Feature",
+				"icon": "$(add)"
+			},
+			{
+				"command": "xrayBeams.preConditionsView.refresh",
+				"title": "Refresh",
+				"icon": "$(refresh)"
+			},
+			{
+				"command": "xrayBeams.preConditionsView.openFile",
+				"title": "Open File",
+				"icon": "$(go-to-file)"
+			},
+			{
+				"command": "xrayBeams.preConditionsView.addToFeature",
 				"title": "Add to Current Feature",
 				"icon": "$(add)"
 			},
@@ -103,6 +122,11 @@
 					"command": "xrayBeams.orphansView.refresh",
 					"when": "view == orphansView",
 					"group": "navigation"
+				},
+				{
+					"command": "xrayBeams.preConditionsView.refresh",
+					"when": "view == preConditionsView",
+					"group": "navigation"
 				}
 			],
 			"view/item/context": [
@@ -114,6 +138,16 @@
 				{
 					"command": "xrayBeams.orphansView.addToFeature",
 					"when": "view == orphansView && viewItem == scenario",
+					"group": "inline"
+				},
+				{
+					"command": "xrayBeams.preConditionsView.openFile",
+					"when": "view == preConditionsView && viewItem == condition",
+					"group": "inline0"
+				},
+				{
+					"command": "xrayBeams.preConditionsView.addToFeature",
+					"when": "view == preConditionsView && viewItem == condition",
 					"group": "inline"
 				}
 			],
@@ -179,6 +213,10 @@
 					"format": "uri"
 				},
 				"xrayBeams.jira.jql.orphans": {
+					"type": "string",
+					"description": "Additional jql filter"
+				},
+				"xrayBeams.jira.jql.preConditions": {
 					"type": "string",
 					"description": "Additional jql filter"
 				},

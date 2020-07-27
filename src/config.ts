@@ -10,6 +10,7 @@ export class Config implements xb.Config {
     get projectKey(): string { return this.cfg.jira.projectKey; }
     get username(): string { return this.cfg.jira.username; };
     get jqlOrphans(): string { return this.cfg.jira.jql.orphans; }
+    get jqlPreConditions(): string { return this.cfg.jira.jql.preConditions; }
 
     private _password: string;
     get password(): string { return this._password; };
