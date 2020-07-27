@@ -34,7 +34,7 @@ Calling out known issues can help limit users opening duplicate issues against y
 
 ## Release Notes
 
-### 1.0.0-alpha
+### 1.0.0
 
 Initial release of Xray Beams extension
 

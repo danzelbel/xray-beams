@@ -3,7 +3,7 @@
 	"name": "xray-beams",
 	"displayName": "Xray Beams",
 	"description": "Xray test management integration for vscode",
-	"version": "1.0.0-alpha",
+	"version": "1.0.0",
 	"publisher": "danzelbel",
 	"author": {
 		"name": "danzelbel"
