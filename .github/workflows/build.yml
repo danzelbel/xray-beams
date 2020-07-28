@@ -1,11 +1,11 @@
-name: CI
+name: build
 
 on:
   push:
     branches: [master]
-  release:
-    types: [created]
-
+    tags-ignore:
+      - '**'
+  
 jobs:
   build:
     strategy:
@@ -15,17 +15,15 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2
+
     - name: Install Node.js
       uses: actions/setup-node@v1
       with:
         node-version: 10.x
+
     - run: npm install
+
     - name: Run tests
       uses: GabrielBB/xvfb-action@v1.2
       with:
         run: npm test
-    - name: Publish
-      if: success() && startsWith(github.ref, 'refs/tags/') && matrix.os == 'ubuntu-latest'
-      run: npm run deploy
-      env:
-        VSCE_PAT: ${{ secrets.VSCE_PAT }}
