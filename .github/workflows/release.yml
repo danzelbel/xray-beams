@@ -1,8 +1,11 @@
 name: release
 
 on:
-  release:
-    types: [created]
+  push:
+    branches: [master]
+    tags-ignore:
+      - "*-dev"
+      - "*-rc"
 
 jobs:
   deploy:
@@ -22,9 +25,6 @@ jobs:
       uses: GabrielBB/xvfb-action@v1.2
       with:
         run: npm test
-    
-    - name: Update version
-      run: npm version ${{env.GITHUB_RUN_ID}}
 
     - name: Package the VSIX
       run: npm run package
@@ -32,8 +32,24 @@ jobs:
     - name: Upload VSIX
       uses: actions/upload-artifact@v1
       with:
-        name: xray-beams-${{env.GITHUB_RUN_ID}}.vsix
-        path: xray-beams-${{env.GITHUB_RUN_ID}}.vsix
+        name: xray-beams-release.vsix
+        path: xray-beams-release.vsix
+
+    - name: Get the version
+      id: version
+      run: |
+        echo ::set-output name=version::${GITHUB_REF#refs/tags/}
+        echo ::set-output name=major::$(echo $version | cut -d. -f1)
+        echo ::set-output name=minor::$(echo $version | cut -d. -f2)
+
+    - name: Create release
+      if: success()
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}} # This token is provided by Actions, you do not need to create your own token
+      with:
+        tag_name: ${{steps.version.outputs.major}}.${{steps.version.outputs.minor}}.${{env.GITHUB_RUN_ID}}
+        release_name: ${{steps.version.outputs.major}}.${{steps.version.outputs.minor}}.${{env.GITHUB_RUN_ID}}
     
     - name: Publish
       if: success()
