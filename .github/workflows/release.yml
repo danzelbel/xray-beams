@@ -31,8 +31,8 @@ jobs:
 
     - uses: actions/upload-artifact@v1
       with:
-        name: xray-beams-${{GITHUB_RUN_ID}}.vsix
-        path: xray-beams-${{GITHUB_RUN_ID}}.vsix
+        name: "xray-beams-${{GITHUB_RUN_ID}}.vsix"
+        path: "xray-beams-${{GITHUB_RUN_ID}}.vsix"
     
     - name: Publish
       if: success()
