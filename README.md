@@ -1,3 +1,8 @@
+[![MIT License](https://img.shields.io/github/license/danzelbel/xray-beams)](https://github.com/danzelbel/xray-beams/blob/master/LICENSE)
+[![Version](https://vsmarketplacebadge.apphb.com/version/danzelbel.xray-beams.svg)](https://marketplace.visualstudio.com/items?itemName=danzelbel.xray-beams)
+![Build](https://github.com/danzelbel/xray-beams/workflows/build/badge.svg)
+![Release](https://github.com/danzelbel/xray-beams/workflows/release/badge.svg)
+
 # Xray Beams
 
 Xray test management integration for vscode
@@ -37,7 +42,3 @@ Calling out known issues can help limit users opening duplicate issues against y
 ### 1.0.0
 
 Initial release of Xray Beams extension
-
-## License
-
-[![Version](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/danzelbel/xray-beams/blob/master/LICENSE)
