@@ -3,9 +3,8 @@ name: release
 on:
   push:
     branches: [master]
-    tags-ignore:
-      - "*-dev"
-      - "*-rc"
+    tags:
+      - "!refs/tags/*-*"
 
 jobs:
   deploy:
