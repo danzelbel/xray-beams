@@ -24,15 +24,16 @@ jobs:
         run: npm test
     
     - name: Update version
-      run: npm version $GITHUB_RUN_ID
+      run: npm version ${{env.GITHUB_RUN_ID}}
 
     - name: Package the VSIX
       run: npm run package
 
-    - uses: actions/upload-artifact@v1
+    - name: Upload VSIX
+      uses: actions/upload-artifact@v1
       with:
-        name: "xray-beams-${{env.GITHUB_RUN_ID}}.vsix"
-        path: "xray-beams-${{env.GITHUB_RUN_ID}}.vsix"
+        name: xray-beams-${{env.GITHUB_RUN_ID}}.vsix
+        path: xray-beams-${{env.GITHUB_RUN_ID}}.vsix
     
     - name: Publish
       if: success()
