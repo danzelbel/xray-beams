@@ -2,29 +2,15 @@ name: release
 
 on:
   push:
-    branches: [master]
-    tags:
-      - "!*-*"
+    branches: [release,master] # TODO: REMOVE MASTER AFTER VERIFYING THAT THIS IS ALREADY WORKING
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-    
-    - name: Get the version
-      id: version
-      run: |
-        echo ::set-output name=version::${GITHUB_REF#refs/tags/}
-        echo ::set-output name=major::$(echo $version | cut -d. -f1)
-        echo ::set-output name=minor::$(echo $version | cut -d. -f2)
 
     - name: Debug
-      run: |
-        echo output variables
-        echo ${GITHUB_REF}
-        echo ${{github.ref}}
-        echo ${{steps.version.outputs.major}}.${{steps.version.outputs.minor}}.${{env.GITHUB_RUN_ID}}
-
+      run: echo ${{date +%Y.%-m}}.${GITHUB_RUN_ID}
 
     # - name: Checkout
     #   uses: actions/checkout@v2
@@ -50,21 +36,14 @@ jobs:
     #     name: xray-beams-release.vsix
     #     path: xray-beams-release.vsix
 
-    # - name: Get the version
-    #   id: version
-    #   run: |
-    #     echo ::set-output name=version::${GITHUB_REF#refs/tags/}
-    #     echo ::set-output name=major::$(echo $version | cut -d. -f1)
-    #     echo ::set-output name=minor::$(echo $version | cut -d. -f2)
-
     # - name: Create release
     #   if: success()
     #   uses: actions/create-release@v1
     #   env:
     #     GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}} # This token is provided by Actions, you do not need to create your own token
     #   with:
-    #     tag_name: ${{steps.version.outputs.major}}.${{steps.version.outputs.minor}}.${{env.GITHUB_RUN_ID}}
-    #     release_name: ${{steps.version.outputs.major}}.${{steps.version.outputs.minor}}.${{env.GITHUB_RUN_ID}}
+    #     tag_name: ${{date +%Y.%-m}}.${GITHUB_RUN_ID}
+    #     release_name: ${{date +%Y.%-m}}.${GITHUB_RUN_ID}
     
     # - name: Publish
     #   if: success()

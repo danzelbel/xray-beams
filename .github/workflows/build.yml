@@ -2,9 +2,7 @@ name: build
 
 on:
   push:
-    branches: [master]
-    tags-ignore:
-      - "!*-*"
+    branches: [release-candidate] # TODO: ADD MASTER BACK AFTER TESTING THE RELEASE WORKFLOW
   
 jobs:
   build:
