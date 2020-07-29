@@ -38,13 +38,24 @@ jobs:
       run: echo ::set-output name=YYYYmm::$(date +%Y.%-m)
 
     - name: Create release
+      id: create_release
       if: success()
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}} # This token is provided by Actions, you do not need to create your own token
       with:
-        tag_name: ${{steps.date.outputs.YYYYmm}}.${GITHUB_RUN_ID}
-        release_name: ${{steps.date.outputs.YYYYmm}}.${GITHUB_RUN_ID}
+        tag_name: ${{steps.date.outputs.YYYYmm}}.${{github.run_id}}
+        release_name: ${{steps.date.outputs.YYYYmm}}.${{github.run_id}}
+
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      with:
+        upload_url: ${{steps.create_release.outputs.upload_url}}
+        asset_path: ./xray-beams-release.vsix
+        asset_name: xray-beams-release.vsix
+        asset_content_type: application/vsix
     
     - name: Publish
       if: success()
