@@ -10,14 +10,20 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-
-
+    
     - name: Get the version
       id: version
       run: |
         echo ::set-output name=version::${GITHUB_REF#refs/tags/}
         echo ::set-output name=major::$(echo $version | cut -d. -f1)
         echo ::set-output name=minor::$(echo $version | cut -d. -f2)
+
+    - name: Debug
+      run: |
+        echo output variables
+        echo ${GITHUB_REF}
+        echo ${{github.ref}}
+        echo ${{steps.version.outputs.major}}.${{steps.version.outputs.minor}}.${{env.GITHUB_RUN_ID}}
 
 
     # - name: Checkout
