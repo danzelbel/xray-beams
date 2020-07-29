@@ -35,10 +35,10 @@ This extension contributes the following settings:
 
 ## Known Issues
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+-
 
 ## Release Notes
 
-### 1.0.0
+### 2020.7.1
 
 Initial release of Xray Beams extension
