@@ -2,7 +2,7 @@ name: release
 
 on:
   push:
-    branches: [release,master] # TODO: REMOVE MASTER AFTER VERIFYING THAT THIS IS ALREADY WORKING
+    branches: [release]
 
 jobs:
   deploy:

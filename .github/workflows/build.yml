@@ -2,7 +2,7 @@ name: build
 
 on:
   push:
-    branches: [release-candidate] # TODO: ADD MASTER BACK AFTER TESTING THE RELEASE WORKFLOW
+    branches: [master, release-candidate]
   
 jobs:
   build:
