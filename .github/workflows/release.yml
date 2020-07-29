@@ -9,48 +9,45 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Install Node.js
+      uses: actions/setup-node@v1
+      with:
+        node-version: 10.x
+
+    - run: npm install
+
+    - name: Run tests
+      uses: GabrielBB/xvfb-action@v1.2
+      with:
+        run: npm test
+
+    - name: Package the VSIX
+      run: npm run package
+
+    - name: Upload VSIX
+      uses: actions/upload-artifact@v1
+      with:
+        name: xray-beams-release.vsix
+        path: xray-beams-release.vsix
+
     - name: Get date
       id: date
       run: echo ::set-output name=YYYYmm::$(date +%Y.%-m)
 
-    - name: Debug
-      run: echo ${{steps.date.outputs.YYYYmm}}.${GITHUB_RUN_ID}
-
-    # - name: Checkout
-    #   uses: actions/checkout@v2
-
-    # - name: Install Node.js
-    #   uses: actions/setup-node@v1
-    #   with:
-    #     node-version: 10.x
-
-    # - run: npm install
-
-    # - name: Run tests
-    #   uses: GabrielBB/xvfb-action@v1.2
-    #   with:
-    #     run: npm test
-
-    # - name: Package the VSIX
-    #   run: npm run package
-
-    # - name: Upload VSIX
-    #   uses: actions/upload-artifact@v1
-    #   with:
-    #     name: xray-beams-release.vsix
-    #     path: xray-beams-release.vsix
-
-    # - name: Create release
-    #   if: success()
-    #   uses: actions/create-release@v1
-    #   env:
-    #     GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}} # This token is provided by Actions, you do not need to create your own token
-    #   with:
-    #     tag_name: ${{steps.data.output.YYYYmm}}.${GITHUB_RUN_ID}
-    #     release_name: ${{steps.data.output.YYYYmm}}.${GITHUB_RUN_ID}
+    - name: Create release
+      if: success()
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}} # This token is provided by Actions, you do not need to create your own token
+      with:
+        tag_name: ${{steps.date.outputs.YYYYmm}}.${GITHUB_RUN_ID}
+        release_name: ${{steps.date.outputs.YYYYmm}}.${GITHUB_RUN_ID}
     
-    # - name: Publish
-    #   if: success()
-    #   run: npm run deploy
-    #   env:
-    #     VSCE_PAT: ${{secrets.VSCE_PAT}}
+    - name: Publish
+      if: success()
+      run: npm run deploy
+      env:
+        VSCE_PAT: ${{secrets.VSCE_PAT}}
