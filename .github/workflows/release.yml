@@ -4,36 +4,13 @@ on:
   push:
     branches: [master]
     tags:
-      - "refs/tags/*"
-      - "!refs/tags/*-*"
+      - "!*-*"
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
 
-    - name: Install Node.js
-      uses: actions/setup-node@v1
-      with:
-        node-version: 10.x
-
-    - run: npm install
-
-    - name: Run tests
-      uses: GabrielBB/xvfb-action@v1.2
-      with:
-        run: npm test
-
-    - name: Package the VSIX
-      run: npm run package
-
-    - name: Upload VSIX
-      uses: actions/upload-artifact@v1
-      with:
-        name: xray-beams-release.vsix
-        path: xray-beams-release.vsix
 
     - name: Get the version
       id: version
@@ -42,17 +19,49 @@ jobs:
         echo ::set-output name=major::$(echo $version | cut -d. -f1)
         echo ::set-output name=minor::$(echo $version | cut -d. -f2)
 
-    - name: Create release
-      if: success()
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}} # This token is provided by Actions, you do not need to create your own token
-      with:
-        tag_name: ${{steps.version.outputs.major}}.${{steps.version.outputs.minor}}.${{env.GITHUB_RUN_ID}}
-        release_name: ${{steps.version.outputs.major}}.${{steps.version.outputs.minor}}.${{env.GITHUB_RUN_ID}}
+
+    # - name: Checkout
+    #   uses: actions/checkout@v2
+
+    # - name: Install Node.js
+    #   uses: actions/setup-node@v1
+    #   with:
+    #     node-version: 10.x
+
+    # - run: npm install
+
+    # - name: Run tests
+    #   uses: GabrielBB/xvfb-action@v1.2
+    #   with:
+    #     run: npm test
+
+    # - name: Package the VSIX
+    #   run: npm run package
+
+    # - name: Upload VSIX
+    #   uses: actions/upload-artifact@v1
+    #   with:
+    #     name: xray-beams-release.vsix
+    #     path: xray-beams-release.vsix
+
+    # - name: Get the version
+    #   id: version
+    #   run: |
+    #     echo ::set-output name=version::${GITHUB_REF#refs/tags/}
+    #     echo ::set-output name=major::$(echo $version | cut -d. -f1)
+    #     echo ::set-output name=minor::$(echo $version | cut -d. -f2)
+
+    # - name: Create release
+    #   if: success()
+    #   uses: actions/create-release@v1
+    #   env:
+    #     GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}} # This token is provided by Actions, you do not need to create your own token
+    #   with:
+    #     tag_name: ${{steps.version.outputs.major}}.${{steps.version.outputs.minor}}.${{env.GITHUB_RUN_ID}}
+    #     release_name: ${{steps.version.outputs.major}}.${{steps.version.outputs.minor}}.${{env.GITHUB_RUN_ID}}
     
-    - name: Publish
-      if: success()
-      run: npm run deploy
-      env:
-        VSCE_PAT: ${{secrets.VSCE_PAT}}
+    # - name: Publish
+    #   if: success()
+    #   run: npm run deploy
+    #   env:
+    #     VSCE_PAT: ${{secrets.VSCE_PAT}}
