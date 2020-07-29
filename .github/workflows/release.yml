@@ -14,7 +14,7 @@ jobs:
       run: echo ::set-output name=YYYYmm::$(date +%Y.%-m)
 
     - name: Debug
-      run: echo ${{steps.data.output.YYYYmm}}.${GITHUB_RUN_ID}
+      run: echo ${{steps.date.outputs.YYYYmm}}.${GITHUB_RUN_ID}
 
     # - name: Checkout
     #   uses: actions/checkout@v2
