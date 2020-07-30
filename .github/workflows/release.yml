@@ -31,7 +31,7 @@ jobs:
       uses: actions/upload-artifact@v1
       with:
         name: xray-beams-release.vsix
-        path: xray-beams-release.vsix
+        path: xray-beams-insider.vsix
 
     - name: Get date
       id: date

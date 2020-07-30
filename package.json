@@ -236,13 +236,15 @@
 		"watch": "tsc -watch -p ./",
 		"pretest": "npm run compile && npm run lint",
 		"test": "node ./out/test/runTest.js",
-		"package": "vsce package -o xray-beams-release.vsix",
-		"deploy": "vsce publish --yarn"
+		"package": "vsce package -o xray-beams-insider.vsix",
+		"deploy": "vsce publish"
 	},
 	"devDependencies": {
+		"@types/base-64": "^0.1.3",
 		"@types/glob": "^7.1.1",
 		"@types/mocha": "^7.0.1",
 		"@types/node": "^12.11.7",
+		"@types/node-fetch": "^2.5.7",
 		"@types/vscode": "^1.45.0",
 		"@typescript-eslint/eslint-plugin": "^2.18.0",
 		"@typescript-eslint/parser": "^2.18.0",
