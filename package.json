@@ -3,7 +3,7 @@
 	"name": "xray-beams",
 	"displayName": "Xray Beams",
 	"description": "Xray test management integration for vscode",
-	"version": "2020.7.2",
+	"version": "2020.7.3",
 	"publisher": "danzelbel",
 	"author": {
 		"name": "danzelbel"
@@ -38,11 +38,13 @@
 			"explorer": [
 				{
 					"id": "orphansView",
-					"name": "XrayBeams Orphans"
+					"name": "XrayBeams Orphans",
+					"when": "workbenchState == workspace"
 				},
 				{
 					"id": "preConditionsView",
-					"name": "XrayBeams Pre-Conditions"
+					"name": "XrayBeams Pre-Conditions",
+					"when": "workbenchState == workspace"
 				}
 			]
 		},
@@ -110,7 +112,7 @@
 			"commandPalette": [
 				{
 					"command": "xrayBeams.workspaceInit",
-					"when": "workbenchState != workspace"
+					"when": "workbenchState != workspace && workspaceFolderCount == 0"
 				},
 				{
 					"command": "xrayBeams.refresh",

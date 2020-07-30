@@ -39,6 +39,6 @@ This extension contributes the following settings:
 
 ## Release Notes
 
-### 2020.7.1
+### 2020.7.3
 
 Initial release of Xray Beams extension
