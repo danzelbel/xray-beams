@@ -31,7 +31,7 @@ Xray test management integration for vscode
      }
    }
    ```
-   :warning: _Make sure to at least supply the required extension settings._<br/><br/>
+   ⚠ _Make sure to at least supply the required extension settings._<br/><br/>
 1. Save the file as `xraybeams test repository.code-workspace`
 1. Open the workspace file in vscode anytime you need to work on your Xray project.
 
@@ -41,7 +41,7 @@ Simply create another workspace file for each Xray project and open them as sepa
 
 Xray Beams can only work on one Xray project per vscode instance. This is by design in order to allow the user to focus on a specific Xray project and to limit the number of views present in the explorer.
 
-:warning: _Workspace file allows you to add more than one folder. Please limit it to one folder only._
+⚠ _Workspace file allows you to add more than one folder. Please limit it to one folder only._
 
 ## Features
 
@@ -75,7 +75,7 @@ View and add pre-conditions to feature files.
 
 ![features](images/readme/view-pre-conditions.gif)
 
-:information_source: A `folderId:{{folderId}}` label will be added/removed from the pre-condition when it gets associated/dissociated to an Xray folder.
+🛈 A `folderId:{{folderId}}` label will be added/removed from the pre-condition when it gets associated/dissociated to an Xray folder.
 
 ### Detect feature problems
 
