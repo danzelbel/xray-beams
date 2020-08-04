@@ -28,7 +28,6 @@
 	"license": "MIT",
 	"activationEvents": [
 		"onFileSystem:xbfs",
-		"onCommand:xrayBeams.workspaceInit",
 		"onCommand:xrayBeams.refresh"
 	],
 	"main": "./out/extension.js",
@@ -49,10 +48,6 @@
 			]
 		},
 		"commands": [
-			{
-				"command": "xrayBeams.workspaceInit",
-				"title": "XrayBeams: Setup Workspace"
-			},
 			{
 				"command": "xrayBeams.refresh",
 				"title": "XrayBeams: Refresh"
@@ -110,10 +105,6 @@
 		],
 		"menus": {
 			"commandPalette": [
-				{
-					"command": "xrayBeams.workspaceInit",
-					"when": "workbenchState != workspace && workspaceFolderCount == 0"
-				},
 				{
 					"command": "xrayBeams.refresh",
 					"when": "workbenchState == workspace"

@@ -18,7 +18,6 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	const xbfs = new XrayBeamsFS(context, lookup, xrayRepository);
 	context.subscriptions.push(vscode.workspace.registerFileSystemProvider("xbfs", xbfs));
-	context.subscriptions.push(vscode.commands.registerCommand("xrayBeams.workspaceInit", () => initWorkspace(true)));
 	context.subscriptions.push(vscode.commands.registerCommand("xrayBeams.refresh", async () => initWorkspace()));
 
 	context.subscriptions.push(vscode.workspace.onDidRenameFiles(async e => {
@@ -46,15 +45,9 @@ export async function activate(context: vscode.ExtensionContext) {
 		preConditionsView.refresh();
 	}));
 
-	async function initWorkspace(setup: boolean = false): Promise<void> {
-		if (setup) {
-			const success = vscode.workspace.updateWorkspaceFolders(0, 0, { uri: vscode.Uri.parse("xbfs:/"), name: cfg.projectKey });
-			if (!success) { throw new Error("Initalize workspace failed!"); }
-			return;
-		}
-
+	async function initWorkspace(): Promise<void> {
 		const wsf = vscode.workspace.workspaceFolders;
-		if (setup || (wsf && wsf.length === 1 && wsf[0].name === cfg.projectKey && wsf[0].uri.scheme === "xbfs")) {
+		if (wsf && wsf.length === 1 && wsf[0].name === cfg.projectKey && wsf[0].uri.scheme === "xbfs") {
 			vscode.commands.executeCommand("workbench.view.explorer");
 			const isSet = await cfg.setConfig();
 			if (!isSet) { return; }
