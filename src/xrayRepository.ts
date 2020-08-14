@@ -165,11 +165,12 @@ export class XrayRepository {
 
             await Promise.all(e.gherkinDocument.feature.children.filter(c => c.scenario).map(c => addOrUpdateScenario(c)));
 
-            // Add/Update background
+            // Add/Update/Remove background
+            const folderId = features.get(e.gherkinDocument.uri).folder.id;
             const bg = e.gherkinDocument.feature.children.find(c => c.background)?.background;
             if (bg) {
                 const summary = bg.name !== '' ? bg.name : e.gherkinDocument.feature.name;
-                const label = `folderId:${features.get(e.gherkinDocument.uri).folder.id}`;
+                const label = `folderId:${folderId}`;
                 const lastStep = bg.steps[bg.steps.length - 1];
                 const end = lastStep.dataTable?.rows[lastStep.dataTable.rows.length - 1].location.line ?? lastStep.location.line;
 
@@ -197,6 +198,15 @@ export class XrayRepository {
                     await this.xrayClient.jiraIssue.updatePreCondition(key, summary, bg.description, labels, steps);
                 } else {
                     key = await this.xrayClient.jiraIssue.createPreCondition(summary, bg.description, [label], steps);
+                }
+            } else {
+                // No background found for this feature, let's remove any associated pre-condition
+                const preConditions = await this.xrayClient.jiraIssue.getPreConditions();
+                const preCondition = preConditions.find(c => c.fields.labels.includes(`folderId:${folderId}`));
+                if (preCondition) {
+                    const labels = preCondition.fields.labels.filter(l => !l.startsWith("folderId:"));
+                    const steps = preCondition.fields[this.xrayClient.customFields.conditions];
+                    await this.xrayClient.jiraIssue.updatePreCondition(preCondition.key, preCondition.fields.summary, preCondition.fields.description, labels, steps);
                 }
             }
 
