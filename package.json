@@ -252,6 +252,6 @@
 		"base-64": "^0.1.0",
 		"cucumber-messages": "^8.0.0",
 		"gherkin": "^9.0.0",
-		"node-fetch": "^2.6.0"
+		"node-fetch": "^2.6.1"
 	}
 }
