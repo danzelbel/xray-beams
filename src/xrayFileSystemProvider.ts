@@ -39,17 +39,23 @@ export class Directory implements vscode.FileStat {
 export type Entry = File | Directory;
 
 export class XrayTextDocumentProvider implements vscode.TextDocumentContentProvider {
+    private _onDidChange = new vscode.EventEmitter<vscode.Uri>();
+    readonly onDidChange = this._onDidChange.event;
+
     constructor(private lookup: EntryLookup, private xrayRepository: XrayRepository) { }
 
-    async provideTextDocumentContent(uri: vscode.Uri, token: vscode.CancellationToken): Promise<string> {
-        if (token.isCancellationRequested) { return "Canceled"; }
+    async provideTextDocumentContent(uri: vscode.Uri): Promise<string> {
         var entry = this.lookup.lookupAsFile(uri, false);
         return await this.xrayRepository.getFeature(entry.folder);
+    }
+
+    update(uri: vscode.Uri) {
+        this._onDidChange.fire(uri);
     }
 }
 
 class XrayQuickDiffProvider implements vscode.QuickDiffProvider {
-    provideOriginalResource(uri: vscode.Uri, token: vscode.CancellationToken): vscode.ProviderResult<vscode.Uri> {
+    provideOriginalResource(uri: vscode.Uri): vscode.ProviderResult<vscode.Uri> {
         return uri.with({ scheme: "xbfs-scm" });
     }
 }
@@ -105,28 +111,31 @@ export class EntryLookup {
 }
 
 export class XraySourceControl implements vscode.Disposable {
-    private disposables: vscode.Disposable[] = [];
+    private _disposables: vscode.Disposable[] = [];
     private scm: vscode.SourceControl;
     changedResources: vscode.SourceControlResourceGroup;
     origEntries: Map<string, xb.Folder>;
     private gherkin: Gherkin;
     private commitInProgress: boolean;
+    docProvider: XrayTextDocumentProvider;
 
-    constructor(context: vscode.ExtensionContext, private lookup: EntryLookup, private xrayRepository: XrayRepository, private xbfs: XrayBeamsFS) {
+    constructor(private lookup: EntryLookup, private xrayRepository: XrayRepository, private xbfs: XrayBeamsFS) {
         this.scm = vscode.scm.createSourceControl("xray", "Xray", vscode.Uri.parse("xbfs:/"));
-        this.disposables.push(this.scm);
+        this._disposables.push(this.scm);
         this.changedResources = this.scm.createResourceGroup("workingTree", "CHANGES");
-        this.disposables.push(this.changedResources);
+        this._disposables.push(this.changedResources);
         this.scm.quickDiffProvider = new XrayQuickDiffProvider();
         this.scm.inputBox.placeholder = "Comment";
-        context.subscriptions.push(this.scm);
+        this.docProvider = new XrayTextDocumentProvider(lookup, xrayRepository);
+        this._disposables.push(vscode.workspace.registerTextDocumentContentProvider("xbfs-scm", this.docProvider));
+
         this.gherkin = new Gherkin();
         // scm/title
-        context.subscriptions.push(vscode.commands.registerCommand("xrayBeams.scm.commit", this.commit, this));
-        context.subscriptions.push(vscode.commands.registerCommand("xrayBeams.scm.cleanAll", this.cleanAll, this));
+        this._disposables.push(vscode.commands.registerCommand("xrayBeams.scm.commit", this.commit, this));
+        this._disposables.push(vscode.commands.registerCommand("xrayBeams.scm.cleanAll", this.cleanAll, this));
         // scm/resourceState/context
-        context.subscriptions.push(vscode.commands.registerCommand("xrayBeams.scm.openFile", this.openFile, this));
-        context.subscriptions.push(vscode.commands.registerCommand("xrayBeams.scm.clean", this.clean, this));
+        this._disposables.push(vscode.commands.registerCommand("xrayBeams.scm.openFile", this.openFile, this));
+        this._disposables.push(vscode.commands.registerCommand("xrayBeams.scm.clean", this.clean, this));
     }
 
     async commit(): Promise<void> {
@@ -217,7 +226,7 @@ export class XraySourceControl implements vscode.Disposable {
     }
 
     dispose(): void {
-        this.disposables.forEach(d => d.dispose());
+        this._disposables.forEach(d => d.dispose());
     }
 
     private async getResourceState(uri: vscode.Uri): Promise<vscode.SourceControlResourceState> {
@@ -241,8 +250,8 @@ export class XrayBeamsFS implements vscode.FileSystemProvider, vscode.Disposable
     initialized = false;
     private scm: XraySourceControl;
 
-    constructor(context: vscode.ExtensionContext, private lookup: EntryLookup, private xrayRepository: XrayRepository) {
-        this.scm = new XraySourceControl(context, lookup, xrayRepository, this);
+    constructor(private lookup: EntryLookup, private xrayRepository: XrayRepository) {
+        this.scm = new XraySourceControl(lookup, xrayRepository, this);
         this.disposables.push(this.scm);
     }
 
@@ -307,6 +316,7 @@ export class XrayBeamsFS implements vscode.FileSystemProvider, vscode.Disposable
         }
         if (!entry.isDirty && entry.folder) {
             const content = await this.xrayRepository.getFeature(entry.folder);
+            this.scm.docProvider.update(uri.with({ scheme: "xbfs-scm" }));
             entry.data = Buffer.from(content);
             entry.size = entry.data.byteLength;
         }

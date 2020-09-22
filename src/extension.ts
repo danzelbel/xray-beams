@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { Config } from "./config";
 import { XrayRepository } from "./xrayRepository";
-import { XrayBeamsFS, XrayTextDocumentProvider, EntryLookup, Directory } from "./xrayFileSystemProvider";
+import { XrayBeamsFS, EntryLookup, Directory } from "./xrayFileSystemProvider";
 import { OrphansView } from "./orphansView";
 import { PreConditionsView } from "./preConditionsView";
 import * as path from "path";
@@ -13,10 +13,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	const orphansView = new OrphansView(context, xrayRepository);
 	const preConditionsView = new PreConditionsView(context, xrayRepository);
 
-	const xrayTextDocumentProvider = new XrayTextDocumentProvider(lookup, xrayRepository);
-	context.subscriptions.push(vscode.workspace.registerTextDocumentContentProvider("xbfs-scm", xrayTextDocumentProvider));
-
-	const xbfs = new XrayBeamsFS(context, lookup, xrayRepository);
+	const xbfs = new XrayBeamsFS(lookup, xrayRepository);
 	context.subscriptions.push(vscode.workspace.registerFileSystemProvider("xbfs", xbfs));
 	context.subscriptions.push(vscode.commands.registerCommand("xrayBeams.refresh", async () => initWorkspace()));
 
