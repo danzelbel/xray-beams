@@ -28,17 +28,14 @@ export class XrayTestRepository implements xb.XrayTestRepository {
     }
 
     async getOrphans(): Promise<xb.Test[]> {
-        const get = async (pageSize: number) => {
+        const get = async (pageSize: number, jql: string = "") => {
             const url = new URL(`${this.cfg.baseUrl}/rest/raven/1.0/folderStructure/allOrphanTests`);
             const params = {
                 entityKey: this.cfg.projectKey,
                 pageStart: "0",
                 pageSize: `${pageSize}`,
-                jql: '"Test Type"=Cucumber'
+                jql: jql
             };
-            if (this.cfg.jqlOrphans.trim() !== '') {
-                params.jql = `${params.jql} and ${this.cfg.jqlOrphans}`;
-            }
             url.search = new URLSearchParams(params).toString();
             const headers = {
                 Authorization: `Basic ${encode(this.cfg.username + ":" + this.cfg.password)}`
@@ -50,7 +47,6 @@ export class XrayTestRepository implements xb.XrayTestRepository {
                 const data = await res.json();
                 return Promise.resolve(data);
             } catch (err) {
-                console.error(err);
                 outputChannel.appendLine(`[get] all orphaned tests\n${err}`);
                 outputChannel.show(true);
                 throw err;
@@ -58,7 +54,11 @@ export class XrayTestRepository implements xb.XrayTestRepository {
         };
 
         const total = (await get(0)).total;
-        const res = await get(total);
+        let jql = "";
+        if (this.cfg.jqlOrphans.trim() !== '') {
+            jql = `project=${this.cfg.projectKey} and "Test Type"=Cucumber and ${this.cfg.jqlOrphans}`;
+        }
+        const res = await get(total, jql);
         const tests = res.testIssues.map(t => <xb.Test>{
             id: t.id,
             key: t.key,
