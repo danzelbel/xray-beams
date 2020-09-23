@@ -145,19 +145,21 @@ export class XrayRepository {
 
                 let start: number;
                 if (c.scenario.description !== '') {
+                    const descLines = c.scenario.description.split("\n");
                     start = c.scenario.location.line
-                        + lines.slice(c.scenario.location.line, end).indexOf(c.scenario.description) // since there's no location property for description
-                        + c.scenario.description.split("\n").length;
+                        + lines.slice(c.scenario.location.line, end).indexOf(descLines[0]) // since there's no location property for description
+                        + descLines.length;
                 } else {
                     start = c.scenario.location.line;
                 }
 
                 const steps = lines.slice(start, end).map(l => l.startsWith("\t") ? l.slice(1) : l).join("\n");
+                const desc = this.unescapeKeywords(c.scenario.description.replace("\t", ""));
 
                 if (key) {
-                    await this.xrayClient.jiraIssue.updateTest(key, c.scenario.name, c.scenario.description.trim(), labels, testRepositoryPath, steps, isScenarioOutline);
+                    await this.xrayClient.jiraIssue.updateTest(key, c.scenario.name, desc, labels, testRepositoryPath, steps, isScenarioOutline);
                 } else {
-                    key = await this.xrayClient.jiraIssue.createTest(c.scenario.name, c.scenario.description.trim(), labels, testRepositoryPath, steps, isScenarioOutline);
+                    key = await this.xrayClient.jiraIssue.createTest(c.scenario.name, desc, labels, testRepositoryPath, steps, isScenarioOutline);
                 }
 
                 keys.push({ rank, key });
@@ -176,14 +178,16 @@ export class XrayRepository {
 
                 let start: number;
                 if (bg.description !== '') {
+                    const descLines = bg.description.split("\n");
                     start = bg.location.line
-                        + lines.slice(bg.location.line, end).indexOf(bg.description) // since there's no location property for description
-                        + bg.description.split("\n").length;
+                        + lines.slice(bg.location.line, end).indexOf(descLines[0]) // since there's no location property for description
+                        + descLines.length;
                 } else {
                     start = bg.location.line;
                 }
 
                 const steps = lines.slice(start, end).map(l => l.startsWith("\t") ? l.slice(1) : l).join("\n");
+                const desc = this.unescapeKeywords(bg.description.replace("\t", ""));
 
                 // Let's find a background key which should be between the feature and background names
                 let key = e.gherkinDocument.comments
@@ -195,9 +199,9 @@ export class XrayRepository {
                     const labels = preCondition.fields.labels.filter(l => !l.startsWith("folderId:"));
                     labels.push(label);
 
-                    await this.xrayClient.jiraIssue.updatePreCondition(key, summary, bg.description, labels, steps);
+                    await this.xrayClient.jiraIssue.updatePreCondition(key, summary, desc, labels, steps);
                 } else {
-                    key = await this.xrayClient.jiraIssue.createPreCondition(summary, bg.description, [label], steps);
+                    key = await this.xrayClient.jiraIssue.createPreCondition(summary, desc, [label], steps);
                 }
             } else {
                 // No background found for this feature, let's remove any associated pre-condition
@@ -237,7 +241,8 @@ export class XrayRepository {
         content += `${scenarioType}: ${issue.fields.summary}\n`;
 
         if (issue.fields.description) {
-            content += `\t${issue.fields.description}\n`;
+            const desc = this.escapeKeywords(issue.fields.description);
+            content += `\t${desc}\n`;
         }
 
         let steps = issue.fields[this.xrayClient.customFields.cucumberScenario];
@@ -253,7 +258,8 @@ export class XrayRepository {
         content += `Background: ${issue.fields.summary}\n`;
 
         if (issue.fields.description) {
-            content += `\t${issue.fields.description}\n`;
+            const desc = this.escapeKeywords(issue.fields.description);
+            content += `\t${desc}\n`;
         }
 
         let steps = issue.fields[this.xrayClient.customFields.conditions];
@@ -262,5 +268,17 @@ export class XrayRepository {
         }
 
         return content;
+    }
+
+    private escapeKeywords(text: string) {
+        text = text.replace(/(?<=^\s*)(#|@|\||Feature:|Rule:|Example:|Scenario:|Scenario Template:|Scenario Outline:|Examples:)(?=\s*)/gm, "\\$&");
+        text = text.replace(/(?<=^\s*)(Given|When|Then|And|But|\*)(?=\s)/gm, "\\$&");
+        return text;
+    }
+
+    private unescapeKeywords(text: string) {
+        text = text.replace(/(?<=^\s*)(\\)(#|@|\||Feature:|Rule:|Example:|Scenario:|Scenario Template:|Scenario Outline:|Examples:)(?=\s*)/gm, "$2");
+        text = text.replace(/(?<=^\s*)(\\)(Given|When|Then|And|But|\*)(?=\s)/gm, "$2");
+        return text;
     }
 }
