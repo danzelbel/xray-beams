@@ -95,13 +95,3 @@ Required
 Optional
 - `xrayBeams.jira.jql.orphans`: The Orphans "JQL Search" filter
 - `xrayBeams.jira.jql.preConditions`: The Additional jql filter for pre-conditions
-
-## Known Issues
-
--
-
-## Release Notes
-
-### 2020.8.1
-
-Initial release of Xray Beams extension
